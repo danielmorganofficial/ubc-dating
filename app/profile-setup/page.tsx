@@ -9,42 +9,49 @@ export default function ProfileSetup(){
 
 const router = useRouter()
 
-const [profilePicture, setProfilePicture] = useState("")
-const [username, setUsername] = useState("")
+const [profilePicture,setProfilePicture] = useState("")
+const [username,setUsername] = useState("")
 const [gender,setGender] = useState("")
 const [ethnicity,setEthnicity] = useState("")
 const [religion,setReligion] = useState("")
 const [hobbies,setHobbies] = useState("")
 const [mbti,setMbti] = useState("")
+const [error,setError] = useState("")
 
 async function handleSubmit(e:React.FormEvent<HTMLFormElement>){
 
 e.preventDefault()
+setError("")
 
 const userId = localStorage.getItem("userId")
-if (!userId) {
-  router.push("/login")
-  return
+
+if(!userId){
+router.push("/login")
+return
 }
 
 try{
 
-const userRef = doc(db, "users", userId)
-await updateDoc(userRef, {
-  "profile.profilePicture": profilePicture,
-  "profile.username": username,
-  "profile.gender": gender,
-  "profile.ethnicity": ethnicity,
-  "profile.religion": religion,
-  "profile.hobbies": hobbies,
-  "profile.mbti": mbti
+const userRef = doc(db,"users",userId)
+
+await updateDoc(userRef,{
+"profile.profilePicture":profilePicture,
+"profile.username":username,
+"profile.gender":gender,
+"profile.ethnicity":ethnicity,
+"profile.religion":religion,
+"profile.hobbies":hobbies,
+"profile.mbti":mbti
 })
 
-}catch(error){
-console.error(error)
-}
-
 router.push("/questionnaire")
+
+}catch(error){
+
+console.error(error)
+setError("Could not save profile.")
+
+}
 
 }
 
@@ -75,14 +82,14 @@ onChange={(e)=>setUsername(e.target.value)}
 required
 />
 
-<select className="input" onChange={(e)=>setGender(e.target.value)} required>
+<select className="input" value={gender} onChange={(e)=>setGender(e.target.value)} required>
 <option value="">Gender</option>
 <option>Male</option>
 <option>Female</option>
 <option>Non-binary</option>
 </select>
 
-<select className="input" onChange={(e)=>setEthnicity(e.target.value)} required>
+<select className="input" value={ethnicity} onChange={(e)=>setEthnicity(e.target.value)} required>
 <option value="">Ethnicity</option>
 <option>East Asian</option>
 <option>South Asian</option>
@@ -94,7 +101,7 @@ required
 <option>Mixed</option>
 </select>
 
-<select className="input" onChange={(e)=>setReligion(e.target.value)}>
+<select className="input" value={religion} onChange={(e)=>setReligion(e.target.value)}>
 <option value="">Religion</option>
 <option>None</option>
 <option>Christian</option>
@@ -111,7 +118,7 @@ value={hobbies}
 onChange={(e)=>setHobbies(e.target.value)}
 />
 
-<select className="input" onChange={(e)=>setMbti(e.target.value)} required>
+<select className="input" value={mbti} onChange={(e)=>setMbti(e.target.value)} required>
 <option value="">MBTI</option>
 <option>INTJ</option>
 <option>INTP</option>
@@ -130,6 +137,8 @@ onChange={(e)=>setHobbies(e.target.value)}
 <option>ESTP</option>
 <option>ESFP</option>
 </select>
+
+{error && <p style={{color:"red"}}>{error}</p>}
 
 <button className="button">
 Continue

@@ -24,23 +24,35 @@ export default function Questionnaire() {
   const [workLifeBalance,setWorkLifeBalance] = useState(3)
 
 
-  function Scale({value,setValue}) {
+  function Scale({
+    value,
+    setValue
+  }:{
+    value:number
+    setValue:(v:number)=>void
+  }) {
 
     return (
 
-      <div className="scale-row">
+      <div className="flex flex-col items-center w-full mb-4">
 
-        {[1,2,3,4,5].map(num => (
+        <input
+          type="range"
+          min="1"
+          max="5"
+          step="1"
+          value={value}
+          onChange={(e)=>setValue(Number(e.target.value))}
+          className="w-full accent-pink-500"
+        />
 
-          <div
-            key={num}
-            className={`scale-btn ${value === num ? "active" : ""}`}
-            onClick={()=>setValue(num)}
-          >
-            {num}
-          </div>
-
-        ))}
+        <div className="flex justify-between w-full text-sm text-gray-500 mt-1">
+          <span>1</span>
+          <span>2</span>
+          <span>3</span>
+          <span>4</span>
+          <span>5</span>
+        </div>
 
       </div>
 

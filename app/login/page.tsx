@@ -12,10 +12,17 @@ const router = useRouter()
 const [name,setName] = useState("")
 const [age,setAge] = useState("")
 const [email,setEmail] = useState("")
+const [error,setError] = useState("")
 
 async function handleSubmit(e:React.FormEvent<HTMLFormElement>){
 
 e.preventDefault()
+setError("")
+
+if(!email.endsWith("@ubc.ca")){
+setError("Please use your UBC email address.")
+return
+}
 
 try{
 
@@ -31,11 +38,14 @@ email
 
 localStorage.setItem("userId",docRef.id)
 
-}catch(error){
-console.error(error)
-}
-
 router.push("/profile-setup")
+
+}catch(error){
+
+console.error(error)
+setError("Something went wrong. Please try again.")
+
+}
 
 }
 
@@ -75,6 +85,8 @@ value={email}
 onChange={(e)=>setEmail(e.target.value)}
 required
 />
+
+{error && <p style={{color:"red"}}>{error}</p>}
 
 <button className="button">
 Continue
