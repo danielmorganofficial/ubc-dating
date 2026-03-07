@@ -21,6 +21,11 @@ export default function Signup() {
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
 
+    if (!email.endsWith("@ubc.ca")) {
+      alert("Please use a UBC email address")
+      return
+    }
+
     try {
 
       const docRef = await addDoc(collection(db, "users"), {
@@ -50,133 +55,141 @@ export default function Signup() {
   }
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen py-2">
+    <div className="min-h-screen bg-gray-100 flex items-center justify-center">
 
-      <h1 className="text-3xl font-bold mb-6">
-        Create Profile
-      </h1>
+      <div className="bg-white shadow-xl rounded-xl p-8 w-96">
 
-      <form
-        onSubmit={handleSubmit}
-        className="flex flex-col gap-4 w-80"
-      >
+        <h1 className="text-3xl font-bold mb-2 text-center">
+          UBC Weekly Dating
+        </h1>
 
-        <input
-          required
-          placeholder="Name"
-          className="border p-2 rounded"
-          value={name}
-          onChange={(e)=>setName(e.target.value)}
-        />
+        <p className="text-gray-500 text-center mb-6">
+          Create your profile
+        </p>
 
-        <input
-          required
-          type="number"
-          min="18"
-          max="99"
-          placeholder="Age"
-          className="border p-2 rounded"
-          value={age}
-          onChange={(e)=>setAge(e.target.value)}
-        />
-
-        <input
-          required
-          placeholder="UBC Email"
-          className="border p-2 rounded"
-          value={email}
-          onChange={(e)=>setEmail(e.target.value)}
-        />
-
-        <select
-          required
-          className="border p-2 rounded"
-          onChange={(e)=>setGender(e.target.value)}
+        <form
+          onSubmit={handleSubmit}
+          className="flex flex-col gap-4"
         >
-          <option value="">Gender</option>
-          <option>Male</option>
-          <option>Female</option>
-          <option>Non-binary</option>
-          <option>Prefer not to say</option>
-        </select>
 
-        <select
-          required
-          className="border p-2 rounded"
-          onChange={(e)=>setEthnicity(e.target.value)}
-        >
-          <option value="">Ethnicity</option>
-          <option>East Asian</option>
-          <option>South Asian</option>
-          <option>Black / African</option>
-          <option>White / European</option>
-          <option>Hispanic / Latino</option>
-          <option>Middle Eastern</option>
-          <option>Southeast Asian</option>
-          <option>Mixed</option>
-          <option>Other</option>
-        </select>
+          <input
+            required
+            placeholder="Name"
+            className="border border-gray-300 p-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
+            value={name}
+            onChange={(e)=>setName(e.target.value)}
+          />
 
-        <select
-          required
-          className="border p-2 rounded"
-          onChange={(e)=>setReligion(e.target.value)}
-        >
-          <option value="">Religion</option>
-          <option>None</option>
-          <option>Christian</option>
-          <option>Muslim</option>
-          <option>Jewish</option>
-          <option>Hindu</option>
-          <option>Buddhist</option>
-          <option>Sikh</option>
-          <option>Other</option>
-        </select>
+          <input
+            required
+            type="number"
+            min="18"
+            max="99"
+            placeholder="Age"
+            className="border border-gray-300 p-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
+            value={age}
+            onChange={(e)=>setAge(e.target.value)}
+          />
 
-        <input
-          required
-          placeholder="Hobbies (e.g. hiking, coffee, gym)"
-          className="border p-2 rounded"
-          value={hobbies}
-          onChange={(e)=>setHobbies(e.target.value)}
-        />
+          <input
+            required
+            placeholder="UBC Email"
+            className="border border-gray-300 p-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
+            value={email}
+            onChange={(e)=>setEmail(e.target.value)}
+          />
 
-        <select
-          required
-          className="border p-2 rounded"
-          onChange={(e)=>setMbti(e.target.value)}
-        >
-          <option value="">MBTI Type</option>
+          <select
+            required
+            className="border border-gray-300 p-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
+            onChange={(e)=>setGender(e.target.value)}
+          >
+            <option value="">Gender</option>
+            <option>Male</option>
+            <option>Female</option>
+            <option>Non-binary</option>
+            <option>Prefer not to say</option>
+          </select>
 
-          <option>INTJ</option>
-          <option>INTP</option>
-          <option>ENTJ</option>
-          <option>ENTP</option>
+          <select
+            required
+            className="border border-gray-300 p-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
+            onChange={(e)=>setEthnicity(e.target.value)}
+          >
+            <option value="">Ethnicity</option>
+            <option>East Asian</option>
+            <option>South Asian</option>
+            <option>Black / African</option>
+            <option>White / European</option>
+            <option>Hispanic / Latino</option>
+            <option>Middle Eastern</option>
+            <option>Southeast Asian</option>
+            <option>Mixed</option>
+            <option>Other</option>
+          </select>
 
-          <option>INFJ</option>
-          <option>INFP</option>
-          <option>ENFJ</option>
-          <option>ENFP</option>
+          <select
+            required
+            className="border border-gray-300 p-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
+            onChange={(e)=>setReligion(e.target.value)}
+          >
+            <option value="">Religion</option>
+            <option>None</option>
+            <option>Christian</option>
+            <option>Muslim</option>
+            <option>Jewish</option>
+            <option>Hindu</option>
+            <option>Buddhist</option>
+            <option>Sikh</option>
+            <option>Other</option>
+          </select>
 
-          <option>ISTJ</option>
-          <option>ISFJ</option>
-          <option>ESTJ</option>
-          <option>ESFJ</option>
+          <input
+            required
+            placeholder="Hobbies (e.g. hiking, coffee, gym)"
+            className="border border-gray-300 p-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
+            value={hobbies}
+            onChange={(e)=>setHobbies(e.target.value)}
+          />
 
-          <option>ISTP</option>
-          <option>ISFP</option>
-          <option>ESTP</option>
-          <option>ESFP</option>
-        </select>
+          <select
+            required
+            className="border border-gray-300 p-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
+            onChange={(e)=>setMbti(e.target.value)}
+          >
+            <option value="">MBTI Type</option>
 
-        <button
-          type="submit"
-          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-        >
-          Continue
-        </button>
+            <option>INTJ</option>
+            <option>INTP</option>
+            <option>ENTJ</option>
+            <option>ENTP</option>
 
-      </form>
+            <option>INFJ</option>
+            <option>INFP</option>
+            <option>ENFJ</option>
+            <option>ENFP</option>
+
+            <option>ISTJ</option>
+            <option>ISFJ</option>
+            <option>ESTJ</option>
+            <option>ESFJ</option>
+
+            <option>ISTP</option>
+            <option>ISFP</option>
+            <option>ESTP</option>
+            <option>ESFP</option>
+          </select>
+
+          <button
+            type="submit"
+            className="bg-blue-500 hover:bg-blue-600 transition text-white font-semibold py-2 px-4 rounded w-full"
+          >
+            Continue
+          </button>
+
+        </form>
+
+      </div>
 
     </div>
   )
