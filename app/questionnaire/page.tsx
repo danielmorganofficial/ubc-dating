@@ -89,7 +89,7 @@ export default function Questionnaire() {
 
     }
 
-    router.push("/match")
+    router.push("/dashboard")
 
   }
 
