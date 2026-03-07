@@ -3,75 +3,92 @@
 import { useRouter } from "next/navigation"
 import { useState } from "react"
 import { db } from "@/lib/firebase"
-import { collection, addDoc } from "firebase/firestore"
+import { doc, updateDoc } from "firebase/firestore"
 
 export default function Questionnaire() {
 
-    const router = useRouter()
+  const router = useRouter()
 
-    const [hobby, setHobby] = useState("")
-    const [personality, setPersonality] = useState("")
+  const [hobby, setHobby] = useState("")
+  const [personality, setPersonality] = useState("")
 
-    async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-        e.preventDefault()
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault()
 
-        // try {
+    try {
 
-        //     await addDoc(collection(db, "preferences"), {
-        //         hobby: hobby,
-        //         personality: personality
-        //     })
+      // get user id saved during signup
+      const userId = localStorage.getItem("userId")
 
-        //     router.push("/match")
+      if (userId) {
 
-        // } catch (error) {
-        //     console.error("Error saving preferences: ", error)
-        // }
+        // reference the correct user document
+        const userRef = doc(db, "users", userId)
 
-        router.push("/match")
+        // update that user with preferences
+        await updateDoc(userRef, {
+          hobby,
+          personality
+        })
+
+        console.log("Preferences saved")
+
+      }
+
+    } catch (error) {
+
+      console.error("Error saving preferences:", error)
+
     }
-   
-    return (
 
-        <div className="min-h-screen flex flex-col items-center justify-center gap-4">
+    // move to match page
+    router.push("/match")
+  }
 
-            <h1 className="text-3xl font-bold">
-                Quick Questions
-            </h1>
+  return (
+    <div className="min-h-screen flex flex-col items-center justify-center gap-4">
 
-            <form
-                onSubmit={handleSubmit}
-                className="flex flex-col gap-4 w-64"
-            >
+      <h1 className="text-3xl font-bold">
+        Quick Questions
+      </h1>
 
-                <select
-                    className="border p-2 rounded"
-                    onChange={(e)=>setHobby(e.target.value)}
-                >
-                    <option value="">Favorite Hobby</option>
-                    <option>Gym</option>
-                    <option>Gaming</option>
-                    <option>Cooking</option>
-                    <option>Hiking</option>
-                </select>
+      <form
+        onSubmit={handleSubmit}
+        className="flex flex-col gap-4 w-64"
+      >
 
-                <select
-                    className="border p-2 rounded"
-                    onChange={(e)=>setPersonality(e.target.value)}
-                >
-                    <option value="">Personality</option>
-                    <option>Introvert</option>
-                    <option>Extrovert</option>
-                    <option>Ambivert</option>
-                </select>
+        <select
+          required
+          className="border p-2 rounded"
+          onChange={(e) => setHobby(e.target.value)}
+        >
+          <option value="">Favorite Hobby</option>
+          <option>Gym</option>
+          <option>Gaming</option>
+          <option>Cooking</option>
+          <option>Hiking</option>
+        </select>
 
-                <button className="bg-blue-500 text-white p-2 rounded" type="submit">
-                    Find My Date
-                </button>
+        <select
+          required
+          className="border p-2 rounded"
+          onChange={(e) => setPersonality(e.target.value)}
+        >
+          <option value="">Personality</option>
+          <option>Introvert</option>
+          <option>Extrovert</option>
+          <option>Ambivert</option>
+        </select>
 
-            </form>
+        <button
+          type="submit"
+          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+        >
+          Find My Date
+        </button>
 
-        </div>
-    )
-      
-    }
+      </form>
+
+    </div>
+  )
+}

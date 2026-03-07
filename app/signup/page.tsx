@@ -18,12 +18,14 @@ export default function Signup() {
         console.log("Form Submitted")
 
         try {
-            await addDoc(collection(db, "users"), {
-                 name,
-                 email
+            const docRef = await addDoc(collection(db, "users"), {
+                name,
+                email
             })
 
-            console.log("saved to firebase")
+            console.log("User saved:", docRef.id)
+
+            localStorage.setItem("userId", docRef.id)
 
         } catch (error) {
             console.error("Firebase error:", error)
