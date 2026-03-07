@@ -4,7 +4,39 @@ import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { db } from "@/lib/firebase"
 import { doc, getDoc, collection, getDocs, updateDoc } from "firebase/firestore"
-import { suggestMatchDate, Availability, DayOfWeek, TimeBlock } from "scheduler"
+
+type Availability = { day: string; time: string }
+
+type DayOfWeek =
+  | "Monday"
+  | "Tuesday"
+  | "Wednesday"
+  | "Thursday"
+  | "Friday"
+  | "Saturday"
+  | "Sunday"
+
+type TimeBlock = "Morning" | "Afternoon" | "Evening"
+
+
+function suggestMatchDate(
+  a1: Availability[],
+  a2: Availability[]
+): Availability | null {
+
+  for (const slot of a1) {
+    const match = a2.find(
+      (s) => s.day === slot.day && s.time === slot.time
+    )
+
+    if (match) {
+      return slot
+    }
+  }
+
+  return null
+}
+
 
 export default function Dashboard() {
   const router = useRouter()
@@ -208,19 +240,28 @@ export default function Dashboard() {
 
   // Components
   function Scale({ value, setValue }: { value: number, setValue: (v: number) => void }) {
-    return (
-      <div className="flex flex-col items-center w-full mb-4">
-        <input
-          type="range" min="1" max="5" step="1"
-          value={value} onChange={(e) => setValue(Number(e.target.value))}
-          className="w-full accent-pink-500"
-        />
-        <div className="flex justify-between w-full text-sm text-gray-500 mt-1">
-          <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span>
-        </div>
+  return (
+    <div className="w-full">
+      <input
+        type="range"
+        min="1"
+        max="5"
+        step="1"
+        value={value}
+        onChange={(e) => setValue(Number(e.target.value))}
+        className="w-full h-2 bg-gray-200 rounded-lg appearance-none accent-pink-500 cursor-pointer"
+      />
+
+      <div className="flex justify-between text-sm text-gray-500 mt-2 px-1">
+        <span>1</span>
+        <span>2</span>
+        <span>3</span>
+        <span>4</span>
+        <span>5</span>
       </div>
-    )
-  }
+    </div>
+  )
+}
 
   if (loading) {
     return <div className="p-10 text-center">Loading your dashboard...</div>
@@ -230,10 +271,10 @@ export default function Dashboard() {
   const suggestedLocation = locations[Math.floor(Math.random() * locations.length)]
 
   return (
-    <div className="min-h-screen bg-gray-50 text-gray-900 pb-20">
+    <div className="min-h-screen bg-gradient-to-b from-pink-50 via-white to-pink-50 text-gray-900 pb-20">
       
       {/* Header */}
-      <header className="bg-white shadow-sm sticky top-0 z-10">
+      <header className="bg-white/80 backdrop-blur-md sticky top-0 z-10 border-b border-pink-100">
         <div className="max-w-4xl mx-auto px-4 h-16 flex items-center justify-between border-b">
           <h1 className="font-bold text-xl text-pink-600">❤️ UBC Dating Dashboard</h1>
           <button 
@@ -245,29 +286,29 @@ export default function Dashboard() {
         </div>
         
         {/* Navigation Tabs */}
-        <div className="max-w-4xl mx-auto px-4 flex gap-6 overflow-x-auto">
+        <div className="max-w-4xl mx-auto px-4 flex gap-8 overflow-x-auto">
           <button 
             onClick={() => setActiveTab("match")}
-            className={`py-3 font-medium text-sm border-b-2 transition-colors ${activeTab === "match" ? "border-pink-500 text-pink-600" : "border-transparent text-gray-500 hover:text-gray-700"}`}
+            className={`py-3 font-medium text-sm border-b-2 transition-all duration-200 ${activeTab === "match" ? "border-pink-500 text-pink-600" : "border-transparent text-gray-500 hover:text-gray-700"}`}
           >
             Weekly Match
           </button>
           <button 
             onClick={() => setActiveTab("profile")}
-            className={`py-3 font-medium text-sm border-b-2 transition-colors ${activeTab === "profile" ? "border-pink-500 text-pink-600" : "border-transparent text-gray-500 hover:text-gray-700"}`}
+            className={`py-3 font-medium text-sm border-b-2 transition-all duration-200 ${activeTab === "profile" ? "border-pink-500 text-pink-600" : "border-transparent text-gray-500 hover:text-gray-700"}`}
           >
             My Profile
           </button>
           <button 
             onClick={() => setActiveTab("questionnaire")}
-            className={`py-3 font-medium text-sm border-b-2 transition-colors ${activeTab === "questionnaire" ? "border-pink-500 text-pink-600" : "border-transparent text-gray-500 hover:text-gray-700"}`}
+            className={`py-3 font-medium text-sm border-b-2 transition-all duration-200 ${activeTab === "questionnaire" ? "border-pink-500 text-pink-600" : "border-transparent text-gray-500 hover:text-gray-700"}`}
           >
             Preferences
           </button>
         </div>
       </header>
 
-      <main className="max-w-4xl mx-auto p-4 md:p-6 mt-6">
+      <main className="max-w-5xl mx-auto p-6 mt-8">
         
         {/* TAB 1: MATCH */}
         {activeTab === "match" && (
@@ -395,7 +436,7 @@ export default function Dashboard() {
                 <h3 className="text-sm font-medium text-gray-700 mb-1">Your Availability</h3>
                 <p className="text-sm text-gray-500 mb-4">Select all times you are generally free for dates.</p>
                 
-                <div className="grid grid-cols-4 gap-1 text-sm overflow-x-auto min-w-max md:min-w-0 pb-2">
+                <div className="grid grid-cols-[80px_1fr_1fr_1fr] gap-3 w-full text-sm">
                   <div className="p-2"></div>
                   {TIMES.map(time => <div key={time} className="text-center font-semibold text-gray-500 p-2">{time}</div>)}
                   
@@ -408,7 +449,7 @@ export default function Dashboard() {
                           <div
                             key={`${day}-${time}`}
                             onClick={() => toggleAvailability(day, time)}
-                            className={`h-10 rounded-lg cursor-pointer flex items-center justify-center transition-all ${
+                            className={`h-12 w-full rounded-xl cursor-pointer flex items-center justify-center transition-all ${
                               isSelected ? "bg-pink-500 text-white shadow-sm" : "bg-gray-100 text-transparent hover:bg-gray-200"
                             }`}
                           >
@@ -465,7 +506,7 @@ export default function Dashboard() {
 
               <div>
                 <h3 className="text-lg font-semibold border-b pb-2 mb-4">Lifestyle Alignment</h3>
-                <div className="space-y-6 max-w-xl">
+                <div className="space-y-8 w-full max-w-2xl mx-auto">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Social Activity Level</label>
                     <Scale value={socialLevel} setValue={setSocialLevel} />
