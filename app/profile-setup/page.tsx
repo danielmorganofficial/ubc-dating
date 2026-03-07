@@ -21,23 +21,26 @@ const [mbti,setMbti] = useState("")
 /* availability system */
 const [availability, setAvailability] = useState<Availability[]>([])
 
-const DAYS: DayOfWeek[] = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
-const TIMES: TimeBlock[] = ["Morning", "Afternoon", "Evening"]
+const DAYS: DayOfWeek[] = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"]
+const TIMES: TimeBlock[] = ["Morning","Afternoon","Evening"]
 
 function toggleAvailability(day: DayOfWeek, time: TimeBlock) {
-  const exists = availability.some(a => a.day === day && a.time === time)
-  if (exists) {
-    setAvailability(availability.filter(a => !(a.day === day && a.time === time)))
-  } else {
-    setAvailability([...availability, { day, time }])
-  }
+
+const exists = availability.some(a => a.day === day && a.time === time)
+
+if (exists) {
+setAvailability(availability.filter(a => !(a.day === day && a.time === time)))
+} else {
+setAvailability([...availability, { day, time }])
 }
+
+}
+
 
 /* interests system */
 
 const [interestInput,setInterestInput] = useState("")
 const [interests,setInterests] = useState<string[]>([])
-
 
 function addInterest(){
 
@@ -49,11 +52,8 @@ setInterestInput("")
 }
 
 function removeInterest(index:number){
-
 setInterests(interests.filter((_,i)=>i!==index))
-
 }
-
 
 
 async function handleSubmit(e:React.FormEvent<HTMLFormElement>){
@@ -93,7 +93,6 @@ console.error(error)
 router.push("/questionnaire")
 
 }
-
 
 
 return(
@@ -167,7 +166,7 @@ onChange={(e)=>setReligion(e.target.value)}
 </select>
 
 
-{/* INTERESTS INPUT */}
+{/* INTEREST INPUT */}
 
 <div>
 
@@ -271,47 +270,97 @@ required
 <option>ESFP</option>
 </select>
 
-{/* AVAILABILITY INPUT */}
-<div className="section" style={{marginTop:"20px", marginBottom:"10px", fontWeight:"bold"}}>
-  Your Availability
-</div>
-<p style={{fontSize:"14px", color:"#666", marginBottom:"10px"}}>Select when you are generally free for dates.</p>
 
-<div style={{display:"grid", gridTemplateColumns:"repeat(4, 1fr)", gap:"4px", marginBottom:"20px", fontSize:"14px"}}>
-  <div></div>
-  {TIMES.map(time => (
-    <div key={time} style={{textAlign:"center", fontWeight:"bold", color:"#555"}}>{time}</div>
-  ))}
-  
-  {DAYS.map(day => (
-    <div style={{display:"contents"}} key={day}>
-      <div style={{fontWeight:"bold", display:"flex", alignItems:"center", justifyContent:"flex-end", paddingRight:"8px", color:"#555"}}>{day.slice(0, 3)}</div>
-      {TIMES.map(time => {
-        const isSelected = availability.some(a => a.day === day && a.time === time);
-        return (
-          <div
-            key={`${day}-${time}`}
-            onClick={() => toggleAvailability(day, time)}
-            style={{
-              background: isSelected ? "#ec4899" : "#f3f4f6",
-              color: isSelected ? "white" : "transparent",
-              height: "36px",
-              borderRadius: "6px",
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              border: isSelected ? "none" : "1px solid #e5e7eb",
-              transition: "all 0.2s"
-            }}
-          >
-            {isSelected && "✓"}
-          </div>
-        )
-      })}
-    </div>
-  ))}
+{/* AVAILABILITY */}
+
+<div className="section" style={{marginTop:"20px", marginBottom:"10px", fontWeight:"bold"}}>
+Your Availability
 </div>
+
+<p style={{fontSize:"14px", color:"#666", marginBottom:"14px"}}>
+Select when you're usually free for dates.
+</p>
+
+<div
+style={{
+display:"grid",
+gridTemplateColumns:"auto 1fr 1fr 1fr",
+gap:"8px",
+width:"100%",
+marginBottom:"20px"
+}}
+>
+
+<div></div>
+
+{TIMES.map(time => (
+<div
+key={time}
+style={{
+textAlign:"center",
+fontWeight:"600",
+color:"#555"
+}}
+>
+{time}
+</div>
+))}
+
+{DAYS.map(day => (
+
+<div style={{display:"contents"}} key={day}>
+
+<div
+style={{
+fontWeight:"600",
+display:"flex",
+alignItems:"center",
+justifyContent:"flex-end",
+paddingRight:"10px",
+color:"#555"
+}}
+>
+{day.slice(0,3)}
+</div>
+
+{TIMES.map(time => {
+
+const isSelected = availability.some(a => a.day === day && a.time === time)
+
+return(
+
+<div
+key={`${day}-${time}`}
+onClick={() => toggleAvailability(day,time)}
+style={{
+background: isSelected ? "#ec4899" : "#f3f4f6",
+height:"44px",
+borderRadius:"8px",
+cursor:"pointer",
+display:"flex",
+alignItems:"center",
+justifyContent:"center",
+border: isSelected ? "none" : "1px solid #e5e7eb",
+transition:"all 0.15s"
+}}
+>
+
+{isSelected && (
+<span style={{color:"white", fontWeight:"bold"}}>✓</span>
+)}
+
+</div>
+
+)
+
+})}
+
+</div>
+
+))}
+
+</div>
+
 
 <button className="button">
 Continue
