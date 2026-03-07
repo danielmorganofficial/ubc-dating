@@ -1,49 +1,60 @@
 @import "tailwindcss";
 
-/* Base Theme */
+/* -----------------------------
+   Theme Colors
+----------------------------- */
 
 :root {
-  --bg: #ffe4ec;
+  --bg: #fff5f7;
   --card: #ffffff;
   --accent: #ec4899;
-  --accent-soft: #f9a8d4;
+  --accent-dark: #db2777;
+  --accent-soft: #fce7f3;
+  --border: #fbcfe8;
   --text: #374151;
-  --border: #f3e8ff;
 }
 
-/* Page */
+/* -----------------------------
+   Base Layout
+----------------------------- */
 
 body {
   margin: 0;
   font-family: system-ui, -apple-system, sans-serif;
-  background: linear-gradient(135deg,#ffe4ec,#ffd6e8);
+  background: var(--bg);
   color: var(--text);
 }
 
-/* Page Layout */
+/* Centered page layout used on login/signup pages */
 
 .page {
   min-height: 100vh;
   display: flex;
-  align-items: center;
   justify-content: center;
+  align-items: center;
   padding: 40px 20px;
 }
 
-/* Card */
+/* -----------------------------
+   Card
+----------------------------- */
 
 .card {
   width: 100%;
   max-width: 460px;
   background: var(--card);
-  border-radius: 20px;
   padding: 36px;
+  border-radius: 22px;
+  border: 1px solid var(--border);
+
   box-shadow:
-    0 20px 40px rgba(0,0,0,0.08),
-    0 4px 10px rgba(0,0,0,0.05);
+    0 12px 30px rgba(0,0,0,0.06),
+    0 4px 12px rgba(0,0,0,0.04);
 }
 
-/* Header */
+/* -----------------------------
+   Typography
+----------------------------- */
 
 .title {
   font-size: 28px;
@@ -58,7 +69,15 @@ body {
   color: #6b7280;
 }
 
-/* Form Layout */
+.section {
+  font-weight: 600;
+  margin-top: 18px;
+  margin-bottom: 6px;
+}
+
+/* -----------------------------
+   Form Layout
+----------------------------- */
 
 .form {
   display: flex;
@@ -66,93 +85,130 @@ body {
   gap: 16px;
 }
 
-/* Inputs */
+/* -----------------------------
+   Inputs
+----------------------------- */
 
 .input {
   width: 100%;
   padding: 12px 14px;
-  border-radius: 10px;
-  border: 1px solid #fbcfe8;
+  border-radius: 12px;
+  border: 1px solid var(--border);
   font-size: 14px;
   background: white;
+  transition: 0.15s;
 }
 
 .input:focus {
   outline: none;
   border-color: var(--accent);
-  box-shadow: 0 0 0 2px rgba(236,72,153,0.2);
+  box-shadow: 0 0 0 2px rgba(236,72,153,0.15);
 }
 
-/* Button */
+/* Dropdowns */
+
+select.input {
+  cursor: pointer;
+}
+
+/* -----------------------------
+   Buttons
+----------------------------- */
 
 .button {
   margin-top: 10px;
   width: 100%;
   padding: 12px;
-  border-radius: 12px;
+  border-radius: 14px;
   border: none;
   font-weight: 600;
   font-size: 15px;
 
-  background: linear-gradient(135deg,#ec4899,#f43f5e);
+  background: var(--accent);
   color: white;
 
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: 0.2s;
 }
 
 .button:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 8px 20px rgba(236,72,153,0.25);
+  background: var(--accent-dark);
 }
 
-/* Section headers */
+/* -----------------------------
+   Interest Tags
+----------------------------- */
 
-.section {
-  font-weight: 600;
-  margin-top: 10px;
-}
+.tag {
+  background: var(--accent-soft);
+  color: #be185d;
 
-/* Question scale buttons */
+  padding: 6px 12px;
+  border-radius: 999px;
 
-/* Scale row for questionnaire */
+  font-size: 13px;
+  font-weight: 500;
 
-.scale-row {
   display: flex;
-  flex-direction: row;
-  gap: 10px;
-  margin-top: 8px;
-  margin-bottom: 16px;
+  align-items: center;
+  gap: 6px;
+
+  border: 1px solid var(--border);
 }
 
-.scale-btn {
+/* -----------------------------
+   Availability Grid
+----------------------------- */
 
-  width: 42px;
-  height: 42px;
+.availability-grid {
+  display: grid;
+  grid-template-columns: auto 1fr 1fr 1fr;
+  gap: 8px;
+}
 
-  border-radius: 10px;
+.availability-cell {
+  height: 44px;
+  border-radius: 8px;
+  background: #fdf2f8;
   border: 1px solid #fbcfe8;
-
-  background: white;
 
   display: flex;
   align-items: center;
   justify-content: center;
 
-  font-weight: 600;
-
   cursor: pointer;
 
-  transition: all 0.2s ease;
-
+  transition: 0.15s;
 }
 
-.scale-btn:hover {
-  background: #ffe4ec;
+.availability-cell:hover {
+  background: #fce7f3;
 }
 
-.scale-btn.active {
-  background: linear-gradient(135deg,#ec4899,#f43f5e);
+.availability-cell.active {
+  background: var(--accent);
   color: white;
   border: none;
+}
+
+/* -----------------------------
+   Range Sliders
+----------------------------- */
+
+input[type="range"] {
+  accent-color: var(--accent);
+}
+
+/* -----------------------------
+   Scrollbar (optional but nice)
+----------------------------- */
+
+::-webkit-scrollbar {
+  height: 6px;
+  width: 6px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #fbcfe8;
+  border-radius: 6px;
 }
