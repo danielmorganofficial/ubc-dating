@@ -115,43 +115,68 @@ export default function Dashboard() {
             setSpontaneity(userData.questionnaire.spontaneity || 3)
             setWorkLifeBalance(userData.questionnaire.workLifeBalance || 3)
           }
-        }
 
-        // Load Match Data
-        const querySnapshot = await getDocs(collection(db, "users"))
-        const users: any[] = []
-        let currentUser: any = null
-
-        querySnapshot.forEach((d) => {
-          const data = d.data()
-          if (d.id === userId) {
-            currentUser = { id: d.id, ...data }
+          // Load Match Data
+          if (userData.matchId) {
+            // Already has a match
+            const matchUserSnap = await getDoc(doc(db, "users", userData.matchId))
+            if (matchUserSnap.exists()) {
+              setMatch({ id: matchUserSnap.id, ...matchUserSnap.data() })
+              if (userData.matchSuggestion) {
+                setDateSuggestion(userData.matchSuggestion)
+              }
+            }
           } else {
-            users.push({ id: d.id, ...data })
-          }
-        })
+            // Find a new match
+            const querySnapshot = await getDocs(collection(db, "users"))
+            const availableUsers: any[] = []
+            let currentUser: any = null
 
-        if (currentUser && users.length > 0) {
-          const currentUserAvailability = currentUser.profile?.availability || []
-          const validMatches = users.map((u: any) => ({
-            user: u,
-            suggestion: suggestMatchDate(currentUserAvailability, u.profile?.availability || [])
-          })).filter((m: any) => m.suggestion !== null)
+            querySnapshot.forEach((d) => {
+              const data = d.data()
+              if (d.id === userId) {
+                currentUser = { id: d.id, ...data }
+              } else if (!data.matchId) { // Only unmatched users
+                availableUsers.push({ id: d.id, ...data })
+              }
+            })
 
-          if (validMatches.length > 0) {
-            const randomMatch = validMatches[Math.floor(Math.random() * validMatches.length)]
-            setMatch(randomMatch.user)
-            setDateSuggestion(randomMatch.suggestion)
-          } else {
-            const randomUser = users[Math.floor(Math.random() * users.length)]
-            setMatch(randomUser)
-            setDateSuggestion(suggestMatchDate(currentUserAvailability, randomUser.profile?.availability || []) || { day: "Tuesday", time: "Evening" })
+            if (currentUser && availableUsers.length > 0) {
+              const currentUserAvailability = currentUser.profile?.availability || []
+              const validMatches = availableUsers.map((u: any) => ({
+                user: u,
+                suggestion: suggestMatchDate(currentUserAvailability, u.profile?.availability || [])
+              })).filter((m: any) => m.suggestion !== null)
+
+              let selectedMatch = null
+              let suggestion = null
+
+              if (validMatches.length > 0) {
+                const randomMatch = validMatches[Math.floor(Math.random() * validMatches.length)]
+                selectedMatch = randomMatch.user
+                suggestion = randomMatch.suggestion
+              } else {
+                selectedMatch = availableUsers[Math.floor(Math.random() * availableUsers.length)]
+                suggestion = suggestMatchDate(currentUserAvailability, selectedMatch.profile?.availability || []) || { day: "Tuesday", time: "Evening" }
+              }
+
+              if (selectedMatch) {
+                // Update both users in Firestore to persist the match
+                await updateDoc(doc(db, "users", userId), {
+                  matchId: selectedMatch.id,
+                  matchSuggestion: suggestion
+                })
+                await updateDoc(doc(db, "users", selectedMatch.id), {
+                  matchId: userId,
+                  matchSuggestion: suggestion
+                })
+
+                setMatch(selectedMatch)
+                setDateSuggestion(suggestion)
+              }
+            }
           }
-        } else if (users.length > 0) {
-          const randomUser = users[Math.floor(Math.random() * users.length)]
-          setMatch(randomUser)
         }
-
       } catch (err) {
         console.error("Error loading dashboard data", err)
       } finally {
