@@ -1,0 +1,503 @@
+"use client"
+
+import { useEffect, useState } from "react"
+import { useRouter } from "next/navigation"
+import { db } from "@/lib/firebase"
+import { doc, getDoc, collection, getDocs, updateDoc } from "firebase/firestore"
+import { suggestMatchDate, Availability, DayOfWeek, TimeBlock } from "scheduler"
+
+export default function Dashboard() {
+  const router = useRouter()
+  const [activeTab, setActiveTab] = useState<"match" | "profile" | "questionnaire">("match")
+  const [loading, setLoading] = useState(true)
+
+  // User Data
+  const [userDoc, setUserDoc] = useState<any>(null)
+
+  // Match Data
+  const [match, setMatch] = useState<any>(null)
+  const [dateSuggestion, setDateSuggestion] = useState<Availability | null>(null)
+
+  // Profile Form Data
+  const [profilePicture, setProfilePicture] = useState("")
+  const [username, setUsername] = useState("")
+  const [gender, setGender] = useState("")
+  const [ethnicity, setEthnicity] = useState("")
+  const [religion, setReligion] = useState("")
+  const [mbti, setMbti] = useState("")
+  const [interestInput, setInterestInput] = useState("")
+  const [interests, setInterests] = useState<string[]>([])
+  const [availability, setAvailability] = useState<Availability[]>([])
+
+  const DAYS: DayOfWeek[] = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+  const TIMES: TimeBlock[] = ["Morning", "Afternoon", "Evening"]
+
+  // Questionnaire Form Data
+  const [prefGender, setPrefGender] = useState("")
+  const [prefEthnicity, setPrefEthnicity] = useState("")
+  const [prefReligion, setPrefReligion] = useState("")
+  const [socialLevel, setSocialLevel] = useState(3)
+  const [partyLife, setPartyLife] = useState(3)
+  const [exerciseImportance, setExerciseImportance] = useState(3)
+  const [spontaneity, setSpontaneity] = useState(3)
+  const [workLifeBalance, setWorkLifeBalance] = useState(3)
+
+  useEffect(() => {
+    async function loadData() {
+      const userId = localStorage.getItem("userId")
+      if (!userId) {
+        router.push("/login")
+        return
+      }
+
+      try {
+        const userRef = doc(db, "users", userId)
+        const userSnap = await getDoc(userRef)
+        
+        if (userSnap.exists()) {
+          const userData = userSnap.data()
+          setUserDoc(userData)
+
+          // Load Profile Data
+          if (userData.profile) {
+            setProfilePicture(userData.profile.profilePicture || "")
+            setUsername(userData.profile.username || "")
+            setGender(userData.profile.gender || "")
+            setEthnicity(userData.profile.ethnicity || "")
+            setReligion(userData.profile.religion || "")
+            setMbti(userData.profile.mbti || "")
+            setInterests(userData.profile.interests || [])
+            setAvailability(userData.profile.availability || [])
+          }
+
+          // Load Questionnaire Data
+          if (userData.preferences) {
+            setPrefGender(userData.preferences.gender || "")
+            setPrefEthnicity(userData.preferences.ethnicity || "")
+            setPrefReligion(userData.preferences.religion || "")
+          }
+          if (userData.questionnaire) {
+            setSocialLevel(userData.questionnaire.socialLevel || 3)
+            setPartyLife(userData.questionnaire.partyLife || 3)
+            setExerciseImportance(userData.questionnaire.exerciseImportance || 3)
+            setSpontaneity(userData.questionnaire.spontaneity || 3)
+            setWorkLifeBalance(userData.questionnaire.workLifeBalance || 3)
+          }
+        }
+
+        // Load Match Data
+        const querySnapshot = await getDocs(collection(db, "users"))
+        const users: any[] = []
+        let currentUser: any = null
+
+        querySnapshot.forEach((d) => {
+          const data = d.data()
+          if (d.id === userId) {
+            currentUser = { id: d.id, ...data }
+          } else {
+            users.push({ id: d.id, ...data })
+          }
+        })
+
+        if (currentUser && users.length > 0) {
+          const currentUserAvailability = currentUser.profile?.availability || []
+          const validMatches = users.map((u: any) => ({
+            user: u,
+            suggestion: suggestMatchDate(currentUserAvailability, u.profile?.availability || [])
+          })).filter((m: any) => m.suggestion !== null)
+
+          if (validMatches.length > 0) {
+            const randomMatch = validMatches[Math.floor(Math.random() * validMatches.length)]
+            setMatch(randomMatch.user)
+            setDateSuggestion(randomMatch.suggestion)
+          } else {
+            const randomUser = users[Math.floor(Math.random() * users.length)]
+            setMatch(randomUser)
+            setDateSuggestion(suggestMatchDate(currentUserAvailability, randomUser.profile?.availability || []) || { day: "Tuesday", time: "Evening" })
+          }
+        } else if (users.length > 0) {
+          const randomUser = users[Math.floor(Math.random() * users.length)]
+          setMatch(randomUser)
+        }
+
+      } catch (err) {
+        console.error("Error loading dashboard data", err)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadData()
+  }, [router])
+
+  // Handlers for Profile
+  function toggleAvailability(day: DayOfWeek, time: TimeBlock) {
+    const exists = availability.some(a => a.day === day && a.time === time)
+    if (exists) {
+      setAvailability(availability.filter(a => !(a.day === day && a.time === time)))
+    } else {
+      setAvailability([...availability, { day, time }])
+    }
+  }
+
+  function addInterest() {
+    if (!interestInput.trim()) return
+    setInterests([...interests, interestInput.trim()])
+    setInterestInput("")
+  }
+
+  function removeInterest(index: number) {
+    setInterests(interests.filter((_, i) => i !== index))
+  }
+
+  async function handleSaveProfile(e: React.FormEvent) {
+    e.preventDefault()
+    const userId = localStorage.getItem("userId")
+    if (!userId) return
+
+    try {
+      await updateDoc(doc(db, "users", userId), {
+        "profile.profilePicture": profilePicture,
+        "profile.username": username,
+        "profile.gender": gender,
+        "profile.ethnicity": ethnicity,
+        "profile.religion": religion,
+        "profile.interests": interests,
+        "profile.mbti": mbti,
+        "profile.availability": availability
+      })
+      alert("Profile updated successfully!")
+    } catch (err) {
+      console.error(err)
+      alert("Error saving profile")
+    }
+  }
+
+  // Handlers for Questionnaire
+  async function handleSaveQuestionnaire(e: React.FormEvent) {
+    e.preventDefault()
+    const userId = localStorage.getItem("userId")
+    if (!userId) return
+
+    try {
+      await updateDoc(doc(db, "users", userId), {
+        preferences: {
+          gender: prefGender,
+          ethnicity: prefEthnicity,
+          religion: prefReligion
+        },
+        questionnaire: {
+          socialLevel,
+          partyLife,
+          exerciseImportance,
+          spontaneity,
+          workLifeBalance
+        }
+      })
+      alert("Preferences updated successfully!")
+    } catch (err) {
+      console.error(err)
+      alert("Error saving preferences")
+    }
+  }
+
+  function handleLogout() {
+    localStorage.removeItem("userId")
+    router.push("/login")
+  }
+
+  // Components
+  function Scale({ value, setValue }: { value: number, setValue: (v: number) => void }) {
+    return (
+      <div className="flex flex-col items-center w-full mb-4">
+        <input
+          type="range" min="1" max="5" step="1"
+          value={value} onChange={(e) => setValue(Number(e.target.value))}
+          className="w-full accent-pink-500"
+        />
+        <div className="flex justify-between w-full text-sm text-gray-500 mt-1">
+          <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span>
+        </div>
+      </div>
+    )
+  }
+
+  if (loading) {
+    return <div className="p-10 text-center">Loading your dashboard...</div>
+  }
+
+  const locations = ["Blue Chip Cafe", "Nitobe Garden", "Wreck Beach", "Great Dane Coffee", "UBC Rose Garden"]
+  const suggestedLocation = locations[Math.floor(Math.random() * locations.length)]
+
+  return (
+    <div className="min-h-screen bg-gray-50 text-gray-900 pb-20">
+      
+      {/* Header */}
+      <header className="bg-white shadow-sm sticky top-0 z-10">
+        <div className="max-w-4xl mx-auto px-4 h-16 flex items-center justify-between border-b">
+          <h1 className="font-bold text-xl text-pink-600">❤️ UBC Dating Dashboard</h1>
+          <button 
+            onClick={handleLogout}
+            className="text-sm font-medium text-gray-500 hover:text-gray-800 transition-colors"
+          >
+            Log Out
+          </button>
+        </div>
+        
+        {/* Navigation Tabs */}
+        <div className="max-w-4xl mx-auto px-4 flex gap-6 overflow-x-auto">
+          <button 
+            onClick={() => setActiveTab("match")}
+            className={`py-3 font-medium text-sm border-b-2 transition-colors ${activeTab === "match" ? "border-pink-500 text-pink-600" : "border-transparent text-gray-500 hover:text-gray-700"}`}
+          >
+            Weekly Match
+          </button>
+          <button 
+            onClick={() => setActiveTab("profile")}
+            className={`py-3 font-medium text-sm border-b-2 transition-colors ${activeTab === "profile" ? "border-pink-500 text-pink-600" : "border-transparent text-gray-500 hover:text-gray-700"}`}
+          >
+            My Profile
+          </button>
+          <button 
+            onClick={() => setActiveTab("questionnaire")}
+            className={`py-3 font-medium text-sm border-b-2 transition-colors ${activeTab === "questionnaire" ? "border-pink-500 text-pink-600" : "border-transparent text-gray-500 hover:text-gray-700"}`}
+          >
+            Preferences
+          </button>
+        </div>
+      </header>
+
+      <main className="max-w-4xl mx-auto p-4 md:p-6 mt-6">
+        
+        {/* TAB 1: MATCH */}
+        {activeTab === "match" && (
+          <div className="bg-white rounded-2xl shadow-sm p-8 text-center border border-gray-100 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <h2 className="text-3xl font-bold mb-2">Your Weekly Match ❤️</h2>
+            
+            {!match ? (
+              <p className="text-gray-500 mt-8">Finding someone special for you...</p>
+            ) : (
+              <div className="mt-8">
+                {match.profile?.profilePicture && (
+                  <img src={match.profile.profilePicture} alt="Profile" className="w-32 h-32 rounded-full mx-auto object-cover mb-4 border-4 border-pink-100" />
+                )}
+                
+                <h3 className="text-2xl font-semibold mb-1">
+                  Meet {match.profile?.username || match.name || "someone special"}
+                </h3>
+                
+                <p className="text-gray-600 mb-8 text-lg">
+                  They also like: <span className="font-medium text-pink-600">{match.profile?.interests?.[0] || match.hobby || "hanging out"}</span>
+                </p>
+
+                <div className="bg-pink-50 rounded-xl p-6 inline-block text-left border border-pink-100">
+                  <p className="font-bold text-pink-800 text-sm uppercase tracking-wider mb-2">Suggested Date</p>
+                  <p className="text-xl font-medium text-pink-900">
+                    📍 {suggestedLocation}
+                  </p>
+                  <p className="text-lg text-pink-800 mt-1">
+                    🕒 {dateSuggestion ? `${dateSuggestion.day} ${dateSuggestion.time}` : "Tuesday 6PM"}
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* TAB 2: PROFILE */}
+        {activeTab === "profile" && (
+          <div className="bg-white rounded-2xl shadow-sm p-6 md:p-8 border border-gray-100 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <h2 className="text-2xl font-bold mb-6">Edit Profile</h2>
+            
+            <form onSubmit={handleSaveProfile} className="space-y-5">
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Profile Picture URL</label>
+                  <input className="input w-full" value={profilePicture} onChange={(e) => setProfilePicture(e.target.value)} />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Visible Username</label>
+                  <input className="input w-full" value={username} onChange={(e) => setUsername(e.target.value)} required />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Gender</label>
+                  <select className="input w-full" value={gender} onChange={(e) => setGender(e.target.value)} required>
+                    <option value="">Select Gender</option>
+                    <option>Male</option><option>Female</option><option>Non-binary</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Ethnicity</label>
+                  <select className="input w-full" value={ethnicity} onChange={(e) => setEthnicity(e.target.value)} required>
+                    <option value="">Select Ethnicity</option>
+                    <option>East Asian</option><option>South Asian</option><option>Black / African</option>
+                    <option>White / European</option><option>Hispanic / Latino</option><option>Middle Eastern</option>
+                    <option>Southeast Asian</option><option>Mixed</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Religion</label>
+                  <select className="input w-full" value={religion} onChange={(e) => setReligion(e.target.value)}>
+                    <option value="">Select Religion</option>
+                    <option>None</option><option>Christian</option><option>Muslim</option>
+                    <option>Jewish</option><option>Hindu</option><option>Buddhist</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">MBTI Type</label>
+                  <select className="input w-full" value={mbti} onChange={(e) => setMbti(e.target.value)} required>
+                    <option value="">Select MBTI</option>
+                    <option>INTJ</option><option>INTP</option><option>ENTJ</option><option>ENTP</option>
+                    <option>INFJ</option><option>INFP</option><option>ENFJ</option><option>ENFP</option>
+                    <option>ISTJ</option><option>ISFJ</option><option>ESTJ</option><option>ESFJ</option>
+                    <option>ISTP</option><option>ISFP</option><option>ESTP</option><option>ESFP</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Interests Section */}
+              <div className="pt-4 border-t">
+                <label className="block text-sm font-medium text-gray-700 mb-2">Interests & Hobbies</label>
+                <div className="flex gap-2 mb-3">
+                  <input
+                    className="input flex-1"
+                    placeholder="Add an interest (e.g. hiking, coffee, gaming)"
+                    value={interestInput}
+                    onChange={(e) => setInterestInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault()
+                        addInterest()
+                      }
+                    }}
+                  />
+                  <button type="button" onClick={addInterest} className="bg-pink-500 hover:bg-pink-600 text-white w-12 rounded-xl text-xl flex items-center justify-center transition-colors">
+                    +
+                  </button>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {interests.map((interest, index) => (
+                    <div key={index} className="bg-pink-100 text-pink-800 px-3 py-1.5 rounded-full flex items-center gap-2 text-sm font-medium">
+                      {interest}
+                      <button type="button" className="opacity-60 hover:opacity-100 transition-opacity" onClick={() => removeInterest(index)}>✕</button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Availability Section */}
+              <div className="pt-4 border-t">
+                <h3 className="text-sm font-medium text-gray-700 mb-1">Your Availability</h3>
+                <p className="text-sm text-gray-500 mb-4">Select all times you are generally free for dates.</p>
+                
+                <div className="grid grid-cols-4 gap-1 text-sm overflow-x-auto min-w-max md:min-w-0 pb-2">
+                  <div className="p-2"></div>
+                  {TIMES.map(time => <div key={time} className="text-center font-semibold text-gray-500 p-2">{time}</div>)}
+                  
+                  {DAYS.map(day => (
+                    <div className="contents" key={day}>
+                      <div className="text-right pr-4 font-medium text-gray-600 flex items-center justify-end h-10">{day.slice(0, 3)}</div>
+                      {TIMES.map(time => {
+                        const isSelected = availability.some(a => a.day === day && a.time === time);
+                        return (
+                          <div
+                            key={`${day}-${time}`}
+                            onClick={() => toggleAvailability(day, time)}
+                            className={`h-10 rounded-lg cursor-pointer flex items-center justify-center transition-all ${
+                              isSelected ? "bg-pink-500 text-white shadow-sm" : "bg-gray-100 text-transparent hover:bg-gray-200"
+                            }`}
+                          >
+                            {isSelected && "✓"}
+                          </div>
+                        )
+                      })}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="pt-6">
+                <button type="submit" className="button w-full">Save Profile Changes</button>
+              </div>
+
+            </form>
+          </div>
+        )}
+
+        {/* TAB 3: QUESTIONNAIRE / PREFERENCES */}
+        {activeTab === "questionnaire" && (
+          <div className="bg-white rounded-2xl shadow-sm p-6 md:p-8 border border-gray-100 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <h2 className="text-2xl font-bold mb-6">Match Preferences</h2>
+            
+            <form onSubmit={handleSaveQuestionnaire} className="space-y-6">
+              
+              <div>
+                <h3 className="text-lg font-semibold border-b pb-2 mb-4">Partner Demographics</h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Preferred Gender</label>
+                    <select className="input w-full" value={prefGender} onChange={(e) => setPrefGender(e.target.value)}>
+                      <option value="">Any</option><option>Male</option><option>Female</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Preferred Ethnicity</label>
+                    <select className="input w-full" value={prefEthnicity} onChange={(e) => setPrefEthnicity(e.target.value)}>
+                      <option value="">Any</option><option>East Asian</option><option>South Asian</option>
+                      <option>Black / African</option><option>White / European</option><option>Hispanic / Latino</option>
+                      <option>Middle Eastern</option><option>Southeast Asian</option><option>Mixed</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Preferred Religion</label>
+                    <select className="input w-full" value={prefReligion} onChange={(e) => setPrefReligion(e.target.value)}>
+                      <option value="">Any</option><option>None</option><option>Christian</option>
+                      <option>Muslim</option><option>Jewish</option><option>Hindu</option><option>Buddhist</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <h3 className="text-lg font-semibold border-b pb-2 mb-4">Lifestyle Alignment</h3>
+                <div className="space-y-6 max-w-xl">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Social Activity Level</label>
+                    <Scale value={socialLevel} setValue={setSocialLevel} />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Party / Nightlife Interest</label>
+                    <Scale value={partyLife} setValue={setPartyLife} />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Importance of Exercise</label>
+                    <Scale value={exerciseImportance} setValue={setExerciseImportance} />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Spontaneity</label>
+                    <Scale value={spontaneity} setValue={setSpontaneity} />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Work–Life Balance</label>
+                    <Scale value={workLifeBalance} setValue={setWorkLifeBalance} />
+                  </div>
+                </div>
+              </div>
+
+              <div className="pt-4">
+                <button type="submit" className="button w-full">Save Match Preferences</button>
+              </div>
+
+            </form>
+          </div>
+        )}
+
+      </main>
+    </div>
+  )
+}
