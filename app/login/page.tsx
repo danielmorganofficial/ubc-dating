@@ -19,7 +19,7 @@ async function handleSubmit(e:React.FormEvent<HTMLFormElement>){
 e.preventDefault()
 setError("")
 
-if(!email.endsWith("@ubc.ca")){
+if(!email.endsWith("ubc.ca")){
 setError("Please use your UBC email address.")
 return
 }
