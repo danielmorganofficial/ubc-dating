@@ -12,26 +12,28 @@ export default function Questionnaire() {
   const [hobby, setHobby] = useState("")
   const [personality, setPersonality] = useState("")
 
+  const [prefGender, setPrefGender] = useState("")
+  const [prefEthnicity, setPrefEthnicity] = useState("")
+  const [prefReligion, setPrefReligion] = useState("")
+
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
 
     try {
 
-      // get user id saved during signup
       const userId = localStorage.getItem("userId")
 
       if (userId) {
 
-        // reference the correct user document
         const userRef = doc(db, "users", userId)
 
-        // update that user with preferences
         await updateDoc(userRef, {
           hobby,
-          personality
+          personality,
+          prefGender,
+          prefEthnicity,
+          prefReligion
         })
-
-        console.log("Preferences saved")
 
       }
 
@@ -41,7 +43,6 @@ export default function Questionnaire() {
 
     }
 
-    // move to match page
     router.push("/match")
   }
 
@@ -49,35 +50,70 @@ export default function Questionnaire() {
     <div className="min-h-screen flex flex-col items-center justify-center gap-4">
 
       <h1 className="text-3xl font-bold">
-        Quick Questions
+        Match Preferences
       </h1>
 
       <form
         onSubmit={handleSubmit}
-        className="flex flex-col gap-4 w-64"
+        className="flex flex-col gap-4 w-72"
       >
 
         <select
           required
           className="border p-2 rounded"
-          onChange={(e) => setHobby(e.target.value)}
+          onChange={(e)=>setHobby(e.target.value)}
         >
           <option value="">Favorite Hobby</option>
           <option>Gym</option>
           <option>Gaming</option>
-          <option>Cooking</option>
+          <option>Coffee</option>
           <option>Hiking</option>
         </select>
 
         <select
           required
           className="border p-2 rounded"
-          onChange={(e) => setPersonality(e.target.value)}
+          onChange={(e)=>setPersonality(e.target.value)}
         >
           <option value="">Personality</option>
           <option>Introvert</option>
           <option>Extrovert</option>
           <option>Ambivert</option>
+        </select>
+
+        <select
+          className="border p-2 rounded"
+          onChange={(e)=>setPrefGender(e.target.value)}
+        >
+          <option value="">Preferred Gender</option>
+          <option>Male</option>
+          <option>Female</option>
+          <option>Any</option>
+        </select>
+
+        <select
+          className="border p-2 rounded"
+          onChange={(e)=>setPrefEthnicity(e.target.value)}
+        >
+          <option value="">Preferred Ethnicity</option>
+          <option>East Asian</option>
+          <option>South Asian</option>
+          <option>White</option>
+          <option>Hispanic</option>
+          <option>Any</option>
+        </select>
+
+        <select
+          className="border p-2 rounded"
+          onChange={(e)=>setPrefReligion(e.target.value)}
+        >
+          <option value="">Preferred Religion</option>
+          <option>None</option>
+          <option>Christian</option>
+          <option>Muslim</option>
+          <option>Jewish</option>
+          <option>Hindu</option>
+          <option>Any</option>
         </select>
 
         <button

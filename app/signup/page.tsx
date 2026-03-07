@@ -7,71 +7,113 @@ import { collection, addDoc } from "firebase/firestore"
 
 export default function Signup() {
 
-    const router = useRouter()
+  const router = useRouter()
 
-    const [name, setName] = useState("")
-    const [email, setEmail] = useState("")
+  const [name, setName] = useState("")
+  const [email, setEmail] = useState("")
+  const [gender, setGender] = useState("")
+  const [ethnicity, setEthnicity] = useState("")
+  const [religion, setReligion] = useState("")
 
-    async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-        e.preventDefault()
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault()
 
-        console.log("Form Submitted")
+    try {
 
-        try {
-            const docRef = await addDoc(collection(db, "users"), {
-                name,
-                email
-            })
+      const docRef = await addDoc(collection(db, "users"), {
+        name,
+        email,
+        gender,
+        ethnicity,
+        religion
+      })
 
-            console.log("User saved:", docRef.id)
+      // store user id for questionnaire step
+      localStorage.setItem("userId", docRef.id)
 
-            localStorage.setItem("userId", docRef.id)
+    } catch (error) {
 
-        } catch (error) {
-            console.error("Firebase error:", error)
-        }
+      console.error("Firebase error:", error)
 
-        router.push("/questionnaire")
     }
-    
 
-    return (
-        <div className="flex flex-col items-center justify-center min-h-screen py-2">
+    router.push("/questionnaire")
+  }
 
-            <h1 className="text-3xl font-bold mb-6">
-                Sign Up
-            </h1>
+  return (
+    <div className="flex flex-col items-center justify-center min-h-screen py-2">
 
-            <form
-                onSubmit={handleSubmit}
-                className="flex flex-col gap-4 w-64"
-            >
+      <h1 className="text-3xl font-bold mb-6">
+        Sign Up
+      </h1>
 
-                <input
-                    required
-                    placeholder="Name"
-                    className="border p-2 rounded"
-                    value={name}
-                    onChange={(e)=>setName(e.target.value)}
-                />
+      <form
+        onSubmit={handleSubmit}
+        className="flex flex-col gap-4 w-72"
+      >
 
-                <input
-                    required
-                    placeholder="UBC Email"
-                    className="border p-2 rounded"
-                    value={email}
-                    onChange={(e)=>setEmail(e.target.value)}
-                />
+        <input
+          required
+          placeholder="Name"
+          className="border p-2 rounded"
+          value={name}
+          onChange={(e)=>setName(e.target.value)}
+        />
 
-                <button 
-                    type="submit"
-                    className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-                    >
-                    Continue
-                </button>
-            
-            </form>
+        <input
+          required
+          placeholder="UBC Email"
+          className="border p-2 rounded"
+          value={email}
+          onChange={(e)=>setEmail(e.target.value)}
+        />
 
-        </div>
-    )
+        <select
+          required
+          className="border p-2 rounded"
+          onChange={(e)=>setGender(e.target.value)}
+        >
+          <option value="">Gender</option>
+          <option>Male</option>
+          <option>Female</option>
+          <option>Non-binary</option>
+        </select>
+
+        <select
+          required
+          className="border p-2 rounded"
+          onChange={(e)=>setEthnicity(e.target.value)}
+        >
+          <option value="">Ethnicity</option>
+          <option>East Asian</option>
+          <option>South Asian</option>
+          <option>White</option>
+          <option>Hispanic</option>
+          <option>Other</option>
+        </select>
+
+        <select
+          required
+          className="border p-2 rounded"
+          onChange={(e)=>setReligion(e.target.value)}
+        >
+          <option value="">Religion</option>
+          <option>None</option>
+          <option>Christian</option>
+          <option>Muslim</option>
+          <option>Jewish</option>
+          <option>Hindu</option>
+        </select>
+
+        <button
+          type="submit"
+          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+        >
+          Continue
+        </button>
+
+      </form>
+
+    </div>
+  )
 }
