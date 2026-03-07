@@ -81,7 +81,7 @@ export default function Home() {
       </div>
 
       {/* Main Content */}
-      <div className="z-10 bg-white/80 backdrop-blur-md px-12 py-10 rounded-3xl shadow-2xl border border-pink-200 flex flex-col items-center mt-72">
+      <div className="z-10 bg-white/70 backdrop-blur-sm px-12 py-10 rounded-3xl shadow-2xl border border-pink-200 flex flex-col items-center">
         <h1 className="text-4xl md:text-5xl font-extrabold mb-4 text-pink-600 tracking-tighter drop-shadow-sm text-center">
           UBC Weekly Dating
         </h1>
