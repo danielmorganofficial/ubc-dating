@@ -53,6 +53,7 @@ export default function Dashboard() {
   // Profile Form Data
   const [profilePicture, setProfilePicture] = useState("")
   const [username, setUsername] = useState("")
+  const [phone, setPhone] = useState("")
   const [gender, setGender] = useState("")
   const [ethnicity, setEthnicity] = useState("")
   const [religion, setReligion] = useState("")
@@ -94,6 +95,7 @@ export default function Dashboard() {
           if (userData.profile) {
             setProfilePicture(userData.profile.profilePicture || "")
             setUsername(userData.profile.username || "")
+            setPhone(userData.profile.phone || "")
             setGender(userData.profile.gender || "")
             setEthnicity(userData.profile.ethnicity || "")
             setReligion(userData.profile.religion || "")
@@ -191,6 +193,7 @@ export default function Dashboard() {
       await updateDoc(doc(db, "users", userId), {
         "profile.profilePicture": profilePicture,
         "profile.username": username,
+        "profile.phone": phone,
         "profile.gender": gender,
         "profile.ethnicity": ethnicity,
         "profile.religion": religion,
@@ -324,8 +327,13 @@ export default function Dashboard() {
                 )}
                 
                 <h3 className="text-2xl font-semibold mb-1">
-                  Meet {match.profile?.username || match.name || "someone special"}
+                  Meet {match.profile?.name || "someone special"}
                 </h3>
+
+                <div className="text-gray-500 text-sm mb-6 space-y-1">
+                <p>📧 {match.profile?.email}</p>
+                <p>📱 {match.profile?.phone}</p>
+                </div>
                 
                 <p className="text-gray-600 mb-8 text-lg">
                   They also like: <span className="font-medium text-pink-600">{match.profile?.interests?.[0] || match.hobby || "hanging out"}</span>
@@ -361,7 +369,11 @@ export default function Dashboard() {
                   <label className="block text-sm font-medium text-gray-700 mb-1">Visible Username</label>
                   <input className="input w-full" value={username} onChange={(e) => setUsername(e.target.value)} required />
                 </div>
-                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+                  <input className="input w-full" value={phone} onChange={(e) => setPhone(e.target.value)} required />
+                </div>
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Gender</label>
                   <select className="input w-full" value={gender} onChange={(e) => setGender(e.target.value)} required>
