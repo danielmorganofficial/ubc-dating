@@ -153,6 +153,8 @@ onChange={(e)=>setReligion(e.target.value)}
 
 <div>
 
+<div style={{display:"flex", gap:"8px"}}>
+
 <input
 className="input"
 placeholder="Add an interest (hiking, coffee, gaming)"
@@ -164,16 +166,26 @@ e.preventDefault()
 addInterest()
 }
 }}
+style={{flex:1}}
 />
 
 <button
 type="button"
-className="button"
-style={{marginTop:"8px"}}
 onClick={addInterest}
+style={{
+width:"44px",
+borderRadius:"10px",
+border:"none",
+background:"#ec4899",
+color:"white",
+fontSize:"20px",
+cursor:"pointer"
+}}
 >
-Add Interest
++
 </button>
+
+</div>
 
 <div
 style={{
