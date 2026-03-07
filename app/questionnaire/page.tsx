@@ -9,12 +9,15 @@ export default function Questionnaire() {
 
   const router = useRouter()
 
-  const [hobby, setHobby] = useState("")
-  const [personality, setPersonality] = useState("")
-
   const [prefGender, setPrefGender] = useState("")
   const [prefEthnicity, setPrefEthnicity] = useState("")
   const [prefReligion, setPrefReligion] = useState("")
+
+  const [socialLevel, setSocialLevel] = useState(3)
+  const [partyLife, setPartyLife] = useState(3)
+  const [exerciseImportance, setExerciseImportance] = useState(3)
+  const [spontaneity, setSpontaneity] = useState(3)
+  const [workLifeBalance, setWorkLifeBalance] = useState(3)
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -28,18 +31,28 @@ export default function Questionnaire() {
         const userRef = doc(db, "users", userId)
 
         await updateDoc(userRef, {
-          hobby,
-          personality,
-          prefGender,
-          prefEthnicity,
-          prefReligion
+
+          preferences: {
+            gender: prefGender,
+            ethnicity: prefEthnicity,
+            religion: prefReligion
+          },
+
+          questionnaire: {
+            socialLevel,
+            partyLife,
+            exerciseImportance,
+            spontaneity,
+            workLifeBalance
+          }
+
         })
 
       }
 
     } catch (error) {
 
-      console.error("Error saving preferences:", error)
+      console.error("Error saving questionnaire:", error)
 
     }
 
@@ -55,31 +68,10 @@ export default function Questionnaire() {
 
       <form
         onSubmit={handleSubmit}
-        className="flex flex-col gap-4 w-72"
+        className="flex flex-col gap-4 w-80"
       >
 
-        <select
-          required
-          className="border p-2 rounded"
-          onChange={(e)=>setHobby(e.target.value)}
-        >
-          <option value="">Favorite Hobby</option>
-          <option>Gym</option>
-          <option>Gaming</option>
-          <option>Coffee</option>
-          <option>Hiking</option>
-        </select>
-
-        <select
-          required
-          className="border p-2 rounded"
-          onChange={(e)=>setPersonality(e.target.value)}
-        >
-          <option value="">Personality</option>
-          <option>Introvert</option>
-          <option>Extrovert</option>
-          <option>Ambivert</option>
-        </select>
+        {/* Preferences */}
 
         <select
           className="border p-2 rounded"
@@ -98,8 +90,11 @@ export default function Questionnaire() {
           <option value="">Preferred Ethnicity</option>
           <option>East Asian</option>
           <option>South Asian</option>
+          <option>Black</option>
           <option>White</option>
-          <option>Hispanic</option>
+          <option>Hispanic / Latino</option>
+          <option>Middle Eastern</option>
+          <option>Mixed</option>
           <option>Any</option>
         </select>
 
@@ -113,14 +108,93 @@ export default function Questionnaire() {
           <option>Muslim</option>
           <option>Jewish</option>
           <option>Hindu</option>
+          <option>Buddhist</option>
+          <option>Other</option>
           <option>Any</option>
         </select>
 
+
+        {/* Questionnaire Section */}
+
+        <h2 className="text-xl font-semibold mt-4">
+          Lifestyle Questions
+        </h2>
+
+
+        <label>
+        How socially active are you on a typical week?
+        </label>
+
+        <input
+          type="range"
+          min="1"
+          max="5"
+          value={socialLevel}
+          onChange={(e)=>setSocialLevel(Number(e.target.value))}
+        />
+
+
+
+        <label>
+        How much do you enjoy parties or nightlife?
+        </label>
+
+        <input
+          type="range"
+          min="1"
+          max="5"
+          value={partyLife}
+          onChange={(e)=>setPartyLife(Number(e.target.value))}
+        />
+
+
+
+        <label>
+        How important is exercise and physical health in your lifestyle?
+        </label>
+
+        <input
+          type="range"
+          min="1"
+          max="5"
+          value={exerciseImportance}
+          onChange={(e)=>setExerciseImportance(Number(e.target.value))}
+        />
+
+
+
+        <label>
+        How spontaneous are you when making plans?
+        </label>
+
+        <input
+          type="range"
+          min="1"
+          max="5"
+          value={spontaneity}
+          onChange={(e)=>setSpontaneity(Number(e.target.value))}
+        />
+
+
+
+        <label>
+        How important is maintaining work–life balance to you?
+        </label>
+
+        <input
+          type="range"
+          min="1"
+          max="5"
+          value={workLifeBalance}
+          onChange={(e)=>setWorkLifeBalance(Number(e.target.value))}
+        />
+
+
         <button
           type="submit"
-          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-4"
         >
-          Find My Date
+          Find My Match
         </button>
 
       </form>
