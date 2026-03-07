@@ -13,6 +13,7 @@ const [isLogin, setIsLogin] = useState(false)
 const [name,setName] = useState("")
 const [age,setAge] = useState("")
 const [email,setEmail] = useState("")
+const [phone,setPhone] = useState("")
 const [error,setError] = useState("")
 
 async function handleSubmit(e:React.FormEvent<HTMLFormElement>){
@@ -43,7 +44,8 @@ if(isLogin) {
   profile:{
   name,
   age:Number(age),
-  email
+  email,
+  phone
   }
 
   })
@@ -98,11 +100,21 @@ required
 <input
 className="input"
 type="email"
-placeholder="UBC Email"
+placeholder="Email"
 value={email}
 onChange={(e)=>setEmail(e.target.value)}
 required
 />
+
+{!isLogin && (
+<input
+className="input"
+placeholder="Phone Number"
+value={phone}
+onChange={(e)=>setPhone(e.target.value)}
+required
+/>
+)}
 
 {error && <p style={{color:"red", marginBottom: "10px"}}>{error}</p>}
 
