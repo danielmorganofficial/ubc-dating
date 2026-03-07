@@ -3,208 +3,105 @@
 import { useRouter } from "next/navigation"
 import { useState } from "react"
 import { db } from "@/lib/firebase"
-import { doc, updateDoc } from "firebase/firestore"
+import { doc,updateDoc } from "firebase/firestore"
 
-export default function Questionnaire() {
+export default function Questionnaire(){
 
-  const router = useRouter()
+const router = useRouter()
 
-  const [prefGender,setPrefGender] = useState("")
-  const [prefEthnicity,setPrefEthnicity] = useState("")
-  const [prefReligion,setPrefReligion] = useState("")
+const [socialLevel,setSocialLevel] = useState(3)
+const [partyLife,setPartyLife] = useState(3)
+const [exerciseImportance,setExerciseImportance] = useState(3)
+const [spontaneity,setSpontaneity] = useState(3)
+const [workLifeBalance,setWorkLifeBalance] = useState(3)
 
-  const [socialLevel,setSocialLevel] = useState(3)
-  const [partyLife,setPartyLife] = useState(3)
-  const [exerciseImportance,setExerciseImportance] = useState(3)
-  const [spontaneity,setSpontaneity] = useState(3)
-  const [workLifeBalance,setWorkLifeBalance] = useState(3)
+function Scale({value,setValue}){
 
-  async function handleSubmit(e:React.FormEvent<HTMLFormElement>) {
+return(
 
-    e.preventDefault()
+<div className="scale-row">
 
-    try {
+{[1,2,3,4,5].map(num=>(
+<div
+key={num}
+className={`scale-btn ${value===num ? "active":""}`}
+onClick={()=>setValue(num)}
+>
+{num}
+</div>
+))}
 
-      const userId = localStorage.getItem("userId")
+</div>
 
-      if(userId){
+)
 
-        const userRef = doc(db,"users",userId)
+}
 
-        await updateDoc(userRef,{
+async function handleSubmit(e){
 
-          preferences:{
-            gender:prefGender,
-            ethnicity:prefEthnicity,
-            religion:prefReligion
-          },
+e.preventDefault()
 
-          questionnaire:{
-            socialLevel,
-            partyLife,
-            exerciseImportance,
-            spontaneity,
-            workLifeBalance
-          }
+const userId = localStorage.getItem("userId")
 
-        })
+if(userId){
 
-      }
+await updateDoc(doc(db,"users",userId),{
 
-    } catch(error) {
+questionnaire:{
+socialLevel,
+partyLife,
+exerciseImportance,
+spontaneity,
+workLifeBalance
+}
 
-      console.error(error)
+})
 
-    }
+}
 
-    router.push("/match")
+router.push("/match")
 
-  }
+}
 
-  return (
+return(
 
-    <div className="page">
+<div className="page">
 
-      <div className="card">
+<div className="card">
 
-        <h1 className="title">
-          Match Preferences
-        </h1>
+<h1 className="title">Lifestyle</h1>
 
-        <p className="subtitle">
-          Tell us what you're looking for
-        </p>
+<p className="subtitle">
+Help us understand your lifestyle
+</p>
 
-        <form
-          onSubmit={handleSubmit}
-          className="form"
-        >
+<form onSubmit={handleSubmit} className="form">
 
-          <div className="section">
-            Partner Preferences
-          </div>
+<label>Social Activity</label>
+<Scale value={socialLevel} setValue={setSocialLevel}/>
 
-          <select
-            className="input"
-            onChange={(e)=>setPrefGender(e.target.value)}
-          >
-            <option value="">Preferred Gender</option>
-            <option>Male</option>
-            <option>Female</option>
-            <option>Any</option>
-          </select>
+<label>Party / Nightlife</label>
+<Scale value={partyLife} setValue={setPartyLife}/>
 
-          <select
-            className="input"
-            onChange={(e)=>setPrefEthnicity(e.target.value)}
-          >
-            <option value="">Preferred Ethnicity</option>
-            <option>East Asian</option>
-            <option>South Asian</option>
-            <option>Black / African</option>
-            <option>White / European</option>
-            <option>Hispanic / Latino</option>
-            <option>Middle Eastern</option>
-            <option>Southeast Asian</option>
-            <option>Mixed</option>
-            <option>Any</option>
-          </select>
+<label>Exercise Importance</label>
+<Scale value={exerciseImportance} setValue={setExerciseImportance}/>
 
-          <select
-            className="input"
-            onChange={(e)=>setPrefReligion(e.target.value)}
-          >
-            <option value="">Preferred Religion</option>
-            <option>None</option>
-            <option>Christian</option>
-            <option>Muslim</option>
-            <option>Jewish</option>
-            <option>Hindu</option>
-            <option>Buddhist</option>
-            <option>Other</option>
-            <option>Any</option>
-          </select>
+<label>Spontaneity</label>
+<Scale value={spontaneity} setValue={setSpontaneity}/>
 
+<label>Work-Life Balance</label>
+<Scale value={workLifeBalance} setValue={setWorkLifeBalance}/>
 
-          <div className="section">
-            Lifestyle
-          </div>
+<button className="button">
+Find My Match ❤️
+</button>
 
+</form>
 
-          <label>
-            Social Activity Level ({socialLevel}/5)
-          </label>
+</div>
 
-          <input
-            type="range"
-            min="1"
-            max="5"
-            value={socialLevel}
-            onChange={(e)=>setSocialLevel(Number(e.target.value))}
-          />
+</div>
 
-
-          <label>
-            Enjoyment of Parties / Nightlife ({partyLife}/5)
-          </label>
-
-          <input
-            type="range"
-            min="1"
-            max="5"
-            value={partyLife}
-            onChange={(e)=>setPartyLife(Number(e.target.value))}
-          />
-
-
-          <label>
-            Importance of Exercise ({exerciseImportance}/5)
-          </label>
-
-          <input
-            type="range"
-            min="1"
-            max="5"
-            value={exerciseImportance}
-            onChange={(e)=>setExerciseImportance(Number(e.target.value))}
-          />
-
-
-          <label>
-            Spontaneity ({spontaneity}/5)
-          </label>
-
-          <input
-            type="range"
-            min="1"
-            max="5"
-            value={spontaneity}
-            onChange={(e)=>setSpontaneity(Number(e.target.value))}
-          />
-
-
-          <label>
-            Work–Life Balance Priority ({workLifeBalance}/5)
-          </label>
-
-          <input
-            type="range"
-            min="1"
-            max="5"
-            value={workLifeBalance}
-            onChange={(e)=>setWorkLifeBalance(Number(e.target.value))}
-          />
-
-          <button className="button">
-            Find My Match ❤️
-          </button>
-
-        </form>
-
-      </div>
-
-    </div>
-
-  )
+)
 
 }

@@ -112,3 +112,47 @@ body {
   font-weight: 600;
   margin-top: 10px;
 }
+
+/* Question scale buttons */
+
+/* Scale row for questionnaire */
+
+.scale-row {
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+  margin-top: 8px;
+  margin-bottom: 16px;
+}
+
+.scale-btn {
+
+  width: 42px;
+  height: 42px;
+
+  border-radius: 10px;
+  border: 1px solid #fbcfe8;
+
+  background: white;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition: all 0.2s ease;
+
+}
+
+.scale-btn:hover {
+  background: #ffe4ec;
+}
+
+.scale-btn.active {
+  background: linear-gradient(135deg,#ec4899,#f43f5e);
+  color: white;
+  border: none;
+}
