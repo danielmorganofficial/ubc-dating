@@ -9,30 +9,26 @@ export default function Signup() {
 
   const router = useRouter()
 
-  const [name, setName] = useState("")
-  const [age, setAge] = useState("")
-  const [email, setEmail] = useState("")
-  const [gender, setGender] = useState("")
-  const [ethnicity, setEthnicity] = useState("")
-  const [religion, setReligion] = useState("")
-  const [hobbies, setHobbies] = useState("")
-  const [mbti, setMbti] = useState("")
+  const [name,setName] = useState("")
+  const [age,setAge] = useState("")
+  const [email,setEmail] = useState("")
+  const [gender,setGender] = useState("")
+  const [ethnicity,setEthnicity] = useState("")
+  const [religion,setReligion] = useState("")
+  const [hobbies,setHobbies] = useState("")
+  const [mbti,setMbti] = useState("")
 
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e:React.FormEvent<HTMLFormElement>) {
+
     e.preventDefault()
 
-    if (!email.endsWith("@ubc.ca")) {
-      alert("Please use a UBC email address")
-      return
-    }
+    try{
 
-    try {
+      const docRef = await addDoc(collection(db,"users"),{
 
-      const docRef = await addDoc(collection(db, "users"), {
-
-        profile: {
+        profile:{
           name,
-          age: Number(age),
+          age:Number(age),
           email,
           gender,
           ethnicity,
@@ -43,11 +39,11 @@ export default function Signup() {
 
       })
 
-      localStorage.setItem("userId", docRef.id)
+      localStorage.setItem("userId",docRef.id)
 
-    } catch (error) {
+    }catch(error){
 
-      console.error("Firebase error:", error)
+      console.error(error)
 
     }
 
@@ -55,66 +51,64 @@ export default function Signup() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center">
 
-      <div className="bg-white shadow-xl rounded-xl p-8 w-96">
+    <div className="page">
 
-        <h1 className="text-3xl font-bold mb-2 text-center">
-          UBC Weekly Dating
+      <div className="card">
+
+        <h1 className="title">
+          ❤️ UBC Weekly Dating
         </h1>
 
-        <p className="text-gray-500 text-center mb-6">
+        <p className="subtitle">
           Create your profile
         </p>
 
         <form
           onSubmit={handleSubmit}
-          className="flex flex-col gap-4"
+          className="form"
         >
 
           <input
-            required
+            className="input"
             placeholder="Name"
-            className="border border-gray-300 p-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
             value={name}
             onChange={(e)=>setName(e.target.value)}
+            required
           />
 
           <input
-            required
+            className="input"
             type="number"
-            min="18"
-            max="99"
             placeholder="Age"
-            className="border border-gray-300 p-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
             value={age}
             onChange={(e)=>setAge(e.target.value)}
+            required
           />
 
           <input
-            required
+            className="input"
             placeholder="UBC Email"
-            className="border border-gray-300 p-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
             value={email}
             onChange={(e)=>setEmail(e.target.value)}
+            required
           />
 
           <select
-            required
-            className="border border-gray-300 p-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
+            className="input"
             onChange={(e)=>setGender(e.target.value)}
+            required
           >
             <option value="">Gender</option>
             <option>Male</option>
             <option>Female</option>
             <option>Non-binary</option>
-            <option>Prefer not to say</option>
           </select>
 
           <select
-            required
-            className="border border-gray-300 p-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
+            className="input"
             onChange={(e)=>setEthnicity(e.target.value)}
+            required
           >
             <option value="">Ethnicity</option>
             <option>East Asian</option>
@@ -125,13 +119,12 @@ export default function Signup() {
             <option>Middle Eastern</option>
             <option>Southeast Asian</option>
             <option>Mixed</option>
-            <option>Other</option>
           </select>
 
           <select
-            required
-            className="border border-gray-300 p-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
+            className="input"
             onChange={(e)=>setReligion(e.target.value)}
+            required
           >
             <option value="">Religion</option>
             <option>None</option>
@@ -141,49 +134,40 @@ export default function Signup() {
             <option>Hindu</option>
             <option>Buddhist</option>
             <option>Sikh</option>
-            <option>Other</option>
           </select>
 
           <input
-            required
-            placeholder="Hobbies (e.g. hiking, coffee, gym)"
-            className="border border-gray-300 p-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
+            className="input"
+            placeholder="Hobbies (e.g. hiking, coffee)"
             value={hobbies}
             onChange={(e)=>setHobbies(e.target.value)}
           />
 
           <select
-            required
-            className="border border-gray-300 p-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
+            className="input"
             onChange={(e)=>setMbti(e.target.value)}
+            required
           >
-            <option value="">MBTI Type</option>
-
+            <option value="">MBTI</option>
             <option>INTJ</option>
             <option>INTP</option>
             <option>ENTJ</option>
             <option>ENTP</option>
-
             <option>INFJ</option>
             <option>INFP</option>
             <option>ENFJ</option>
             <option>ENFP</option>
-
             <option>ISTJ</option>
             <option>ISFJ</option>
             <option>ESTJ</option>
             <option>ESFJ</option>
-
             <option>ISTP</option>
             <option>ISFP</option>
             <option>ESTP</option>
             <option>ESFP</option>
           </select>
 
-          <button
-            type="submit"
-            className="bg-blue-500 hover:bg-blue-600 transition text-white font-semibold py-2 px-4 rounded w-full"
-          >
+          <button className="button">
             Continue
           </button>
 
@@ -192,5 +176,7 @@ export default function Signup() {
       </div>
 
     </div>
+
   )
+
 }

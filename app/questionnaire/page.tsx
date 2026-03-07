@@ -9,36 +9,37 @@ export default function Questionnaire() {
 
   const router = useRouter()
 
-  const [prefGender, setPrefGender] = useState("")
-  const [prefEthnicity, setPrefEthnicity] = useState("")
-  const [prefReligion, setPrefReligion] = useState("")
+  const [prefGender,setPrefGender] = useState("")
+  const [prefEthnicity,setPrefEthnicity] = useState("")
+  const [prefReligion,setPrefReligion] = useState("")
 
-  const [socialLevel, setSocialLevel] = useState(3)
-  const [partyLife, setPartyLife] = useState(3)
-  const [exerciseImportance, setExerciseImportance] = useState(3)
-  const [spontaneity, setSpontaneity] = useState(3)
-  const [workLifeBalance, setWorkLifeBalance] = useState(3)
+  const [socialLevel,setSocialLevel] = useState(3)
+  const [partyLife,setPartyLife] = useState(3)
+  const [exerciseImportance,setExerciseImportance] = useState(3)
+  const [spontaneity,setSpontaneity] = useState(3)
+  const [workLifeBalance,setWorkLifeBalance] = useState(3)
 
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e:React.FormEvent<HTMLFormElement>) {
+
     e.preventDefault()
 
     try {
 
       const userId = localStorage.getItem("userId")
 
-      if (userId) {
+      if(userId){
 
-        const userRef = doc(db, "users", userId)
+        const userRef = doc(db,"users",userId)
 
-        await updateDoc(userRef, {
+        await updateDoc(userRef,{
 
-          preferences: {
-            gender: prefGender,
-            ethnicity: prefEthnicity,
-            religion: prefReligion
+          preferences:{
+            gender:prefGender,
+            ethnicity:prefEthnicity,
+            religion:prefReligion
           },
 
-          questionnaire: {
+          questionnaire:{
             socialLevel,
             partyLife,
             exerciseImportance,
@@ -50,41 +51,41 @@ export default function Questionnaire() {
 
       }
 
-    } catch (error) {
+    } catch(error) {
 
-      console.error("Error saving questionnaire:", error)
+      console.error(error)
 
     }
 
     router.push("/match")
+
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center">
 
-      <div className="bg-white shadow-xl rounded-xl p-8 w-96">
+    <div className="page">
 
-        <h1 className="text-3xl font-bold text-center mb-2">
+      <div className="card">
+
+        <h1 className="title">
           Match Preferences
         </h1>
 
-        <p className="text-gray-500 text-center mb-6">
-          Help us find your best match
+        <p className="subtitle">
+          Tell us what you're looking for
         </p>
 
         <form
           onSubmit={handleSubmit}
-          className="flex flex-col gap-4"
+          className="form"
         >
 
-          {/* Partner Preferences */}
-
-          <h2 className="font-semibold text-lg mt-2">
+          <div className="section">
             Partner Preferences
-          </h2>
+          </div>
 
           <select
-            className="border border-gray-300 p-2 rounded focus:ring-2 focus:ring-blue-400"
+            className="input"
             onChange={(e)=>setPrefGender(e.target.value)}
           >
             <option value="">Preferred Gender</option>
@@ -94,7 +95,7 @@ export default function Questionnaire() {
           </select>
 
           <select
-            className="border border-gray-300 p-2 rounded focus:ring-2 focus:ring-blue-400"
+            className="input"
             onChange={(e)=>setPrefEthnicity(e.target.value)}
           >
             <option value="">Preferred Ethnicity</option>
@@ -110,7 +111,7 @@ export default function Questionnaire() {
           </select>
 
           <select
-            className="border border-gray-300 p-2 rounded focus:ring-2 focus:ring-blue-400"
+            className="input"
             onChange={(e)=>setPrefReligion(e.target.value)}
           >
             <option value="">Preferred Religion</option>
@@ -124,22 +125,15 @@ export default function Questionnaire() {
             <option>Any</option>
           </select>
 
-          {/* Lifestyle Questions */}
 
-          <h2 className="font-semibold text-lg mt-4">
+          <div className="section">
             Lifestyle
-          </h2>
+          </div>
 
-
-          {/* Social Level */}
 
           <label>
-            How socially active are you on a typical week?
+            Social Activity Level ({socialLevel}/5)
           </label>
-
-          <div className="text-sm text-gray-500">
-            {socialLevel} / 5
-          </div>
 
           <input
             type="range"
@@ -150,15 +144,9 @@ export default function Questionnaire() {
           />
 
 
-          {/* Party Life */}
-
           <label>
-            How much do you enjoy parties or nightlife?
+            Enjoyment of Parties / Nightlife ({partyLife}/5)
           </label>
-
-          <div className="text-sm text-gray-500">
-            {partyLife} / 5
-          </div>
 
           <input
             type="range"
@@ -169,15 +157,9 @@ export default function Questionnaire() {
           />
 
 
-          {/* Exercise */}
-
           <label>
-            How important is exercise and physical health in your lifestyle?
+            Importance of Exercise ({exerciseImportance}/5)
           </label>
-
-          <div className="text-sm text-gray-500">
-            {exerciseImportance} / 5
-          </div>
 
           <input
             type="range"
@@ -188,15 +170,9 @@ export default function Questionnaire() {
           />
 
 
-          {/* Spontaneity */}
-
           <label>
-            How spontaneous are you when making plans?
+            Spontaneity ({spontaneity}/5)
           </label>
-
-          <div className="text-sm text-gray-500">
-            {spontaneity} / 5
-          </div>
 
           <input
             type="range"
@@ -207,15 +183,9 @@ export default function Questionnaire() {
           />
 
 
-          {/* Work-Life Balance */}
-
           <label>
-            How important is maintaining work–life balance to you?
+            Work–Life Balance Priority ({workLifeBalance}/5)
           </label>
-
-          <div className="text-sm text-gray-500">
-            {workLifeBalance} / 5
-          </div>
 
           <input
             type="range"
@@ -225,12 +195,8 @@ export default function Questionnaire() {
             onChange={(e)=>setWorkLifeBalance(Number(e.target.value))}
           />
 
-
-          <button
-            type="submit"
-            className="bg-blue-500 hover:bg-blue-600 transition text-white font-semibold py-2 px-4 rounded w-full mt-4"
-          >
-            Find My Match
+          <button className="button">
+            Find My Match ❤️
           </button>
 
         </form>
@@ -238,5 +204,7 @@ export default function Questionnaire() {
       </div>
 
     </div>
+
   )
+
 }
