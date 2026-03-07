@@ -14,46 +14,69 @@ const [username,setUsername] = useState("")
 const [gender,setGender] = useState("")
 const [ethnicity,setEthnicity] = useState("")
 const [religion,setReligion] = useState("")
-const [hobbies,setHobbies] = useState("")
 const [mbti,setMbti] = useState("")
-const [error,setError] = useState("")
+
+/* interests system */
+
+const [interestInput,setInterestInput] = useState("")
+const [interests,setInterests] = useState<string[]>([])
+
+
+function addInterest(){
+
+if(!interestInput.trim()) return
+
+setInterests([...interests, interestInput.trim()])
+setInterestInput("")
+
+}
+
+function removeInterest(index:number){
+
+setInterests(interests.filter((_,i)=>i!==index))
+
+}
+
+
 
 async function handleSubmit(e:React.FormEvent<HTMLFormElement>){
 
 e.preventDefault()
-setError("")
 
 const userId = localStorage.getItem("userId")
 
-if(!userId){
+if (!userId) {
 router.push("/login")
 return
 }
 
 try{
 
-const userRef = doc(db,"users",userId)
+const userRef = doc(db, "users", userId)
 
-await updateDoc(userRef,{
-"profile.profilePicture":profilePicture,
-"profile.username":username,
-"profile.gender":gender,
-"profile.ethnicity":ethnicity,
-"profile.religion":religion,
-"profile.hobbies":hobbies,
-"profile.mbti":mbti
+await updateDoc(userRef, {
+
+"profile.profilePicture": profilePicture,
+"profile.username": username,
+"profile.gender": gender,
+"profile.ethnicity": ethnicity,
+"profile.religion": religion,
+"profile.interests": interests,
+"profile.mbti": mbti
+
 })
-
-router.push("/questionnaire")
 
 }catch(error){
 
 console.error(error)
-setError("Could not save profile.")
 
 }
 
+router.push("/questionnaire")
+
 }
+
+
 
 return(
 
@@ -82,14 +105,24 @@ onChange={(e)=>setUsername(e.target.value)}
 required
 />
 
-<select className="input" value={gender} onChange={(e)=>setGender(e.target.value)} required>
+<select
+className="input"
+value={gender}
+onChange={(e)=>setGender(e.target.value)}
+required
+>
 <option value="">Gender</option>
 <option>Male</option>
 <option>Female</option>
 <option>Non-binary</option>
 </select>
 
-<select className="input" value={ethnicity} onChange={(e)=>setEthnicity(e.target.value)} required>
+<select
+className="input"
+value={ethnicity}
+onChange={(e)=>setEthnicity(e.target.value)}
+required
+>
 <option value="">Ethnicity</option>
 <option>East Asian</option>
 <option>South Asian</option>
@@ -101,7 +134,11 @@ required
 <option>Mixed</option>
 </select>
 
-<select className="input" value={religion} onChange={(e)=>setReligion(e.target.value)}>
+<select
+className="input"
+value={religion}
+onChange={(e)=>setReligion(e.target.value)}
+>
 <option value="">Religion</option>
 <option>None</option>
 <option>Christian</option>
@@ -111,14 +148,80 @@ required
 <option>Buddhist</option>
 </select>
 
+
+{/* INTERESTS INPUT */}
+
+<div>
+
 <input
 className="input"
-placeholder="Hobbies (e.g. hiking, coffee)"
-value={hobbies}
-onChange={(e)=>setHobbies(e.target.value)}
+placeholder="Add an interest (hiking, coffee, gaming)"
+value={interestInput}
+onChange={(e)=>setInterestInput(e.target.value)}
+onKeyDown={(e)=>{
+if(e.key==="Enter"){
+e.preventDefault()
+addInterest()
+}
+}}
 />
 
-<select className="input" value={mbti} onChange={(e)=>setMbti(e.target.value)} required>
+<button
+type="button"
+className="button"
+style={{marginTop:"8px"}}
+onClick={addInterest}
+>
+Add Interest
+</button>
+
+<div
+style={{
+display:"flex",
+flexWrap:"wrap",
+gap:"8px",
+marginTop:"10px"
+}}
+>
+
+{interests.map((interest,index)=>(
+
+<div
+key={index}
+style={{
+background:"#fce7f3",
+padding:"6px 10px",
+borderRadius:"20px",
+display:"flex",
+alignItems:"center",
+gap:"6px"
+}}
+>
+
+{interest}
+
+<span
+style={{cursor:"pointer"}}
+onClick={()=>removeInterest(index)}
+>
+✕
+</span>
+
+</div>
+
+))}
+
+</div>
+
+</div>
+
+
+<select
+className="input"
+value={mbti}
+onChange={(e)=>setMbti(e.target.value)}
+required
+>
 <option value="">MBTI</option>
 <option>INTJ</option>
 <option>INTP</option>
@@ -138,8 +241,6 @@ onChange={(e)=>setHobbies(e.target.value)}
 <option>ESFP</option>
 </select>
 
-{error && <p style={{color:"red"}}>{error}</p>}
-
 <button className="button">
 Continue
 </button>
@@ -147,6 +248,7 @@ Continue
 </form>
 
 </div>
+
 </div>
 
 )
