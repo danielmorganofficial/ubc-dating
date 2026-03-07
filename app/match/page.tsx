@@ -3,10 +3,12 @@
 import { useEffect, useState } from "react"
 import { db } from "@/lib/firebase"
 import { collection, getDocs } from "firebase/firestore"
+import { suggestMatchDate, Availability } from "scheduler"
 
 export default function Match() {
 
   const [match, setMatch] = useState<any>(null)
+  const [dateSuggestion, setDateSuggestion] = useState<Availability | null>(null)
 
   useEffect(() => {
 
@@ -14,19 +16,43 @@ export default function Match() {
 
       const querySnapshot = await getDocs(collection(db, "users"))
 
+      const currentUserId = localStorage.getItem("userId")
+      let currentUser: any = null
       const users: any[] = []
 
       querySnapshot.forEach((doc) => {
-        users.push({ id: doc.id, ...doc.data() })
+        const data = doc.data()
+        if (doc.id === currentUserId) {
+          currentUser = { id: doc.id, ...data }
+        } else {
+          users.push({ id: doc.id, ...data })
+        }
       })
 
-      if (users.length > 1) {
+      if (currentUser && users.length > 0) {
+        
+        // Find users with overlapping availability
+        const currentUserAvailability = currentUser.profile?.availability || []
+        
+        const validMatches = users.map((u: any) => ({
+          user: u,
+          suggestion: suggestMatchDate(currentUserAvailability, u.profile?.availability || [])
+        })).filter((m: any) => m.suggestion !== null)
 
-        // simple random match
+        if (validMatches.length > 0) {
+          const randomMatch = validMatches[Math.floor(Math.random() * validMatches.length)]
+          setMatch(randomMatch.user)
+          setDateSuggestion(randomMatch.suggestion)
+        } else {
+          // Fallback if no valid matches
+          const randomUser = users[Math.floor(Math.random() * users.length)]
+          setMatch(randomUser)
+          setDateSuggestion(suggestMatchDate(currentUserAvailability, randomUser.profile?.availability || []) || { day: "Tuesday", time: "Evening" })
+        }
+      } else if (users.length > 0) {
+        // Fallback if current user not found
         const randomUser = users[Math.floor(Math.random() * users.length)]
-
         setMatch(randomUser)
-
       }
 
     }
@@ -57,11 +83,11 @@ export default function Match() {
       </h1>
 
       <p className="text-xl">
-        Meet {match.name}
+        Meet {match.profile?.username || match.name || "someone special"}
       </p>
 
       <p>
-        They also like: {match.hobby}
+        They also like: {match.profile?.interests?.[0] || match.hobby || "hanging out"}
       </p>
 
       <p className="font-bold mt-4">
@@ -69,7 +95,7 @@ export default function Match() {
       </p>
 
       <p>
-        {location} — Tuesday 6PM
+        {location} — {dateSuggestion ? `${dateSuggestion.day} ${dateSuggestion.time}` : "Tuesday 6PM"}
       </p>
 
     </div>

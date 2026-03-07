@@ -1,0 +1,14 @@
+{
+  "name": "scheduler",
+  "version": "1.0.0",
+  "description": "Scheduling logic for matching users",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "node --test dist/index.test.js"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  }
+}
