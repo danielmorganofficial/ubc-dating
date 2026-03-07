@@ -37,6 +37,96 @@ function suggestMatchDate(
   return null
 }
 
+function calculateCompatibility(userA:any,userB:any){
+
+let score = 0
+
+const aProfile = userA.profile || {}
+const bProfile = userB.profile || {}
+
+const aPref = userA.preferences || {}
+const bPref = userB.preferences || {}
+
+const aQ = userA.questionnaire || {}
+const bQ = userB.questionnaire || {}
+
+
+// Gender preference check
+
+const aLikesB =
+  aPref.gender === "Any" ||
+  aPref.gender === bProfile.gender
+
+const bLikesA =
+  bPref.gender === "Any" ||
+  bPref.gender === aProfile.gender
+
+if(!aLikesB || !bLikesA) return -1
+
+score += 20
+
+
+// Ethnicity preference
+
+if(aPref.ethnicity === "Any" || aPref.ethnicity === bProfile.ethnicity){
+score += 5
+}
+
+if(bPref.ethnicity === "Any" || bPref.ethnicity === aProfile.ethnicity){
+score += 5
+}
+
+
+// Religion preference
+
+if(aPref.religion === "Any" || aPref.religion === bProfile.religion){
+score += 5
+}
+
+if(bPref.religion === "Any" || bPref.religion === aProfile.religion){
+score += 5
+}
+
+
+// MBTI similarity
+
+if(aProfile.mbti && bProfile.mbti){
+
+if(aProfile.mbti[0] === bProfile.mbti[0]) score += 3
+if(aProfile.mbti[1] === bProfile.mbti[1]) score += 3
+if(aProfile.mbti[2] === bProfile.mbti[2]) score += 3
+if(aProfile.mbti[3] === bProfile.mbti[3]) score += 3
+
+}
+
+
+// Shared interests
+
+const aInterests = aProfile.interests || []
+const bInterests = bProfile.interests || []
+
+const shared = aInterests.filter((i:string)=>
+bInterests.includes(i)
+)
+
+score += shared.length * 4
+
+
+// Lifestyle similarity
+
+function similarity(a:number,b:number){
+return 5 - Math.abs(a-b)
+}
+
+score += similarity(aQ.socialLevel,bQ.socialLevel)
+score += similarity(aQ.partyLife,bQ.partyLife)
+score += similarity(aQ.exerciseImportance,bQ.exerciseImportance)
+score += similarity(aQ.spontaneity,bQ.spontaneity)
+score += similarity(aQ.workLifeBalance,bQ.workLifeBalance)
+
+return Math.min(score,100)
+
+}
 
 export default function Dashboard() {
   const router = useRouter()
@@ -144,38 +234,45 @@ export default function Dashboard() {
             })
 
             if (currentUser && availableUsers.length > 0) {
-              const currentUserAvailability = currentUser.profile?.availability || []
-              const validMatches = availableUsers.map((u: any) => ({
-                user: u,
-                suggestion: suggestMatchDate(currentUserAvailability, u.profile?.availability || [])
-              })).filter((m: any) => m.suggestion !== null)
 
-              let selectedMatch = null
-              let suggestion = null
+              let bestMatch = null
+              let bestScore = -1
 
-              if (validMatches.length > 0) {
-                const randomMatch = validMatches[Math.floor(Math.random() * validMatches.length)]
-                selectedMatch = randomMatch.user
-                suggestion = randomMatch.suggestion
-              } else {
-                selectedMatch = availableUsers[Math.floor(Math.random() * availableUsers.length)]
-                suggestion = suggestMatchDate(currentUserAvailability, selectedMatch.profile?.availability || []) || { day: "Tuesday", time: "Evening" }
-              }
+              availableUsers.forEach((u: any) => {
 
-              if (selectedMatch) {
+                const score = calculateCompatibility(currentUser, u)
+
+                if (score > bestScore) {
+                  bestScore = score
+                  bestMatch = u
+                }
+
+              })
+
+              if (bestMatch) {
+
+                const suggestion =
+                  suggestMatchDate(
+                    currentUser.profile?.availability || [],
+                    bestMatch.profile?.availability || []
+                  ) || { day: "Tuesday", time: "Evening" }
+
                 // Update both users in Firestore to persist the match
                 await updateDoc(doc(db, "users", userId), {
-                  matchId: selectedMatch.id,
+                  matchId: bestMatch.id,
                   matchSuggestion: suggestion
                 })
-                await updateDoc(doc(db, "users", selectedMatch.id), {
+
+                await updateDoc(doc(db, "users", bestMatch.id), {
                   matchId: userId,
                   matchSuggestion: suggestion
                 })
 
-                setMatch(selectedMatch)
+                setMatch(bestMatch)
                 setDateSuggestion(suggestion)
+
               }
+
             }
           }
         }
