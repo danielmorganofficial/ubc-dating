@@ -3,15 +3,14 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { db } from "@/lib/firebase"
-import { collection, addDoc } from "firebase/firestore"
+import { doc, updateDoc } from "firebase/firestore"
 
-export default function Signup(){
+export default function ProfileSetup(){
 
 const router = useRouter()
 
-const [name,setName] = useState("")
-const [age,setAge] = useState("")
-const [email,setEmail] = useState("")
+const [profilePicture, setProfilePicture] = useState("")
+const [username, setUsername] = useState("")
 const [gender,setGender] = useState("")
 const [ethnicity,setEthnicity] = useState("")
 const [religion,setReligion] = useState("")
@@ -22,24 +21,24 @@ async function handleSubmit(e:React.FormEvent<HTMLFormElement>){
 
 e.preventDefault()
 
-try{
-
-const docRef = await addDoc(collection(db,"users"),{
-
-profile:{
-name,
-age:Number(age),
-email,
-gender,
-ethnicity,
-religion,
-hobbies,
-mbti
+const userId = localStorage.getItem("userId")
+if (!userId) {
+  router.push("/login")
+  return
 }
 
-})
+try{
 
-localStorage.setItem("userId",docRef.id)
+const userRef = doc(db, "users", userId)
+await updateDoc(userRef, {
+  "profile.profilePicture": profilePicture,
+  "profile.username": username,
+  "profile.gender": gender,
+  "profile.ethnicity": ethnicity,
+  "profile.religion": religion,
+  "profile.hobbies": hobbies,
+  "profile.mbti": mbti
+})
 
 }catch(error){
 console.error(error)
@@ -57,32 +56,22 @@ return(
 
 <h1 className="title">❤️ UBC Weekly Dating</h1>
 
-<p className="subtitle">Create your profile</p>
+<p className="subtitle">Create your personalized account</p>
 
 <form onSubmit={handleSubmit} className="form">
 
 <input
 className="input"
-placeholder="Name"
-value={name}
-onChange={(e)=>setName(e.target.value)}
-required
+placeholder="Profile Picture URL"
+value={profilePicture}
+onChange={(e)=>setProfilePicture(e.target.value)}
 />
 
 <input
 className="input"
-type="number"
-placeholder="Age"
-value={age}
-onChange={(e)=>setAge(e.target.value)}
-required
-/>
-
-<input
-className="input"
-placeholder="UBC Email"
-value={email}
-onChange={(e)=>setEmail(e.target.value)}
+placeholder="Visible Username"
+value={username}
+onChange={(e)=>setUsername(e.target.value)}
 required
 />
 

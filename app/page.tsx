@@ -16,7 +16,7 @@ export default function Home() {
 
       <button
         className="bg-pink-500 hover:bg-pink-700 text-white font-bold py-3 px-6 rounded"
-        onClick={() => router.push("/signup")}
+        onClick={() => router.push("/login")}
       >
         Start Matching
       </button>
