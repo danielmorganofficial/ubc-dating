@@ -36,7 +36,7 @@ if(isLogin) {
     }
 
     if (!userDoc) {
-      setError("Account not found. Please check your credentials or register.")
+      setError("Account not found. Please go to the register page.")
       return
     }
 
@@ -48,6 +48,14 @@ if(isLogin) {
   }
 } else {
   try{
+
+  const qEmail = query(collection(db, "users"), where("profile.email", "==", email))
+  const snapEmail = await getDocs(qEmail)
+  
+  if (!snapEmail.empty) {
+    setError("This email is already in use.")
+    return
+  }
 
   const docRef = await addDoc(collection(db,"users"),{
 
