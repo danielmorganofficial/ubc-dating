@@ -499,7 +499,6 @@ export default function Dashboard() {
         {/* TAB 2: PROFILE */}
         {activeTab === "profile" && (
           <div className="bg-white rounded-2xl shadow-sm p-6 md:p-8 border border-gray-100 animate-in fade-in slide-in-from-bottom-4 duration-500">
-<<<<<<< HEAD
             <h2 className="text-2xl font-bold mb-6">Your Profile</h2>
 
             <div className="mb-8 flex flex-col md:flex-row gap-6 items-center md:items-start bg-pink-50/50 p-6 rounded-2xl border border-pink-100">
@@ -516,10 +515,6 @@ export default function Dashboard() {
 
             <h3 className="text-xl font-bold mb-4 border-b pb-2">Edit Details</h3>
             
-=======
-            <h2 className="text-2xl font-bold mb-6">Edit Profile</h2>
-
->>>>>>> 0bdc8b7e9a3b601528a534c5725d673d88470fba
             <form onSubmit={handleSaveProfile} className="space-y-5">
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
