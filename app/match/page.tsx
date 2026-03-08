@@ -18,7 +18,7 @@ export default function Match() {
     async function findMatch() {
       try {
         const currentUserId = localStorage.getItem("userId")
-        
+
         if (!currentUserId) {
           setLoading(false)
           return
@@ -45,14 +45,14 @@ export default function Match() {
               setMatchStatus(myMatchData.match_status)
             } else {
               const matchedId = myMatchData.user1_id === currentUserId ? myMatchData.user2_id : myMatchData.user1_id
-              
+
               const docRef = doc(db, "users", matchedId)
               const docSnap = await getDoc(docRef)
-              
+
               if (docSnap.exists()) {
                 const matchData: any = { id: docSnap.id, ...docSnap.data() }
                 setMatch(matchData)
-                
+
                 setMatchDetails({
                   compatibility: myMatchData.compatibility_percentage,
                   datePlan: myMatchData.date_plan,
@@ -155,7 +155,7 @@ export default function Match() {
       </h1>
 
       <div className="bg-white p-8 rounded-2xl shadow-xl max-w-lg w-full mt-6 border border-gray-100">
-        
+
         {match.profile?.profilePicture && (
           <img src={match.profile.profilePicture} alt="Profile" className="w-32 h-32 rounded-full mx-auto object-cover mb-4 border-4 border-pink-100 shadow-md" />
         )}
@@ -163,7 +163,7 @@ export default function Match() {
         <h3 className="text-3xl font-bold text-gray-800 mb-2">
           Meet {match.profile?.username || match.name || "someone special"}
         </h3>
-        
+
         {matchDetails?.compatibility && (
           <div className="inline-block bg-pink-100 text-pink-800 px-4 py-1 rounded-full text-lg font-semibold my-2">
             {matchDetails.compatibility} Compatible
@@ -190,11 +190,13 @@ export default function Match() {
           <p className="text-lg text-pink-800 mt-1 mb-3">
             🕒 Tuesday 6PM
           </p>
-          
-          {(dateIdeaDescription || matchDetails?.reasoning) && (
+
+          {(dateIdeaDescription || matchDetails?.reasoning || true) && (
             <div className="pt-3 border-t border-pink-200 mt-2">
               {matchDetails?.reasoning && <p className="text-sm text-pink-800 leading-relaxed font-medium mb-3">🤝 {matchDetails.reasoning}</p>}
-              {dateIdeaDescription && <p className="text-sm text-pink-800 leading-relaxed font-medium">✨ {dateIdeaDescription}</p>}
+              <p className="text-sm text-pink-800 leading-relaxed font-medium">
+                ✨ {dateIdeaDescription || "Grab a coffee and enjoy getting to know each other!"}
+              </p>
             </div>
           )}
         </div>
