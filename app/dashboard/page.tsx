@@ -483,6 +483,13 @@ export default function Dashboard() {
           >
             Preferences
           </button>
+          <button
+            onClick={() => router.push("/messages")}
+            className="py-3 font-medium text-sm border-b-2 border-transparent text-gray-500 hover:text-gray-700 transition-all duration-200 flex items-center gap-1.5"
+          >
+            <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
+            Messages
+          </button>
         </div>
       </header>
 
