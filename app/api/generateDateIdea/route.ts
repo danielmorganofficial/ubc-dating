@@ -66,10 +66,11 @@ export async function POST(req: Request) {
 
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) {
-      return NextResponse.json(
-        { error: "GEMINI_API_KEY is not defined" },
-        { status: 500 }
-      );
+      const location = ALL_LOCATIONS[Math.floor(Math.random() * ALL_LOCATIONS.length)];
+      return NextResponse.json({
+        dateIdea: `Enjoy a wonderful time together at ${location}, getting to know each other!`,
+        location
+      });
     }
 
     const genAI = new GoogleGenerativeAI(apiKey);
@@ -130,9 +131,10 @@ export async function POST(req: Request) {
     return NextResponse.json({ dateIdea, location });
   } catch (error) {
     console.error("Error generating date idea:", error);
-    return NextResponse.json(
-      { error: "Failed to generate date idea" },
-      { status: 500 }
-    );
+    const location = ALL_LOCATIONS[Math.floor(Math.random() * ALL_LOCATIONS.length)];
+    return NextResponse.json({
+      dateIdea: `Enjoy a wonderful time together at ${location}, getting to know each other!`,
+      location
+    });
   }
 }

@@ -617,11 +617,11 @@ export default function Dashboard() {
                     🕒 {dateSuggestion ? `${dateSuggestion.day} ${dateSuggestion.time}` : "Tuesday 6PM"}
                   </p>
                   
-                  {dateIdeaDescription && (
-                    <div className="pt-3 border-t border-pink-200 mt-2">
-                      <p className="text-sm text-pink-800 leading-relaxed font-medium">✨ {dateIdeaDescription}</p>
-                    </div>
-                  )}
+                  <div className="pt-3 border-t border-pink-200 mt-2">
+                    <p className="text-sm text-pink-800 leading-relaxed font-medium">
+                      ✨ {dateIdeaDescription || "Grab a coffee and enjoy getting to know each other!"}
+                    </p>
+                  </div>
                 </div>
               </div>
             )}
