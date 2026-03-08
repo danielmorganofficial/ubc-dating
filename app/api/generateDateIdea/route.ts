@@ -89,7 +89,7 @@ export async function POST(req: Request) {
       Then write a 1-2 sentence date description that:
       - Uses ${userAName} and ${userBName} by name
       - Names the chosen location explicitly
-      - Connects their interests to something they can enjoy AT that location
+      - Creatively connects their specific interests to an engaging and fun activity AT that location. Make it sound highly romantic, exciting, or perfectly tailored to them.
       
       Respond ONLY in this exact JSON format (no markdown, no extra text):
       {

@@ -212,3 +212,18 @@ input[type="range"] {
   background: #fbcfe8;
   border-radius: 6px;
 }
+
+/* -----------------------------
+   Animations
+----------------------------- */
+
+@keyframes explode {
+  0% { 
+    transform: translate(0, 0) scale(1) rotate(0deg); 
+    opacity: 1; 
+  }
+  100% { 
+    transform: translate(var(--tx), var(--ty)) scale(0) rotate(var(--rot)); 
+    opacity: 0; 
+  }
+}

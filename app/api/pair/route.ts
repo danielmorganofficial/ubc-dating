@@ -36,7 +36,7 @@ export async function GET() {
       Users data:
       ${JSON.stringify(users, null, 2)}
 
-      IMPORTANT: Provide a Compatibility Percentage. Write a 1-sentence "reasoning" explaining why they match gently using their actual names (from profile.username) instead of generic terms like "User A" or "User 1". DO NOT suggest a specific date plan or location in the reasoning, as that will be handled separately.
+      IMPORTANT: Provide a Compatibility Percentage. Write a 1-sentence "reasoning" that is playful, highly engaging, and cleverly connects their specific interests, hobbies, or MBTI types using their actual names (from profile.username) instead of generic terms like "User A" or "User 1". Make it sound like an expert, enthusiastic matchmaker is speaking. DO NOT suggest a specific date plan or location in the reasoning, as that will be handled separately.
 
       Please return a JSON response strictly in this array format:
       [
