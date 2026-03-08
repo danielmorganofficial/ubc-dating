@@ -36,12 +36,16 @@ export async function GET() {
       Users data:
       ${JSON.stringify(users, null, 2)}
 
+      IMPORTANT: Suggest a unique and fun Date Plan specific to the matched users' shared interests. Give a Compatibility Percentage.
+
       Please return a JSON response strictly in this array format:
       [
         {
           "user1_id": "id1",
           "user2_id": "id2",
-          "reasoning": "Why they match..."
+          "reasoning": "Why they match...",
+          "compatibility_percentage": "85%",
+          "date_plan": "Specific date suggestion based on their interests..."
         },
         ...
         {

@@ -12,8 +12,10 @@ export default function ProfileSetup(){
 const router = useRouter()
 
 const [profilePicture,setProfilePicture] = useState("")
+const [description,setDescription] = useState("")
 const [username,setUsername] = useState("")
 const [gender,setGender] = useState("")
+const [isDragging, setIsDragging] = useState(false)
 const [ethnicity,setEthnicity] = useState("")
 const [religion,setReligion] = useState("")
 const [mbti,setMbti] = useState("")
@@ -74,6 +76,7 @@ const userRef = doc(db, "users", userId)
 await updateDoc(userRef, {
 
 "profile.profilePicture": profilePicture,
+"profile.description": description,
 "profile.username": username,
 "profile.gender": gender,
 "profile.ethnicity": ethnicity,
@@ -107,11 +110,63 @@ return(
 
 <form onSubmit={handleSubmit} className="form">
 
-<input
+<div 
+  className="input" 
+  style={{
+    display: "flex", 
+    flexDirection: "column",
+    alignItems: "center", 
+    justifyContent: "center",
+    minHeight: "150px", 
+    border: isDragging ? "2px dashed #ec4899" : "2px dashed #ccc",
+    background: isDragging ? "#fce7f3" : "transparent",
+    cursor: "pointer",
+    position: "relative",
+    overflow: "hidden"
+  }}
+  onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+  onDragLeave={() => setIsDragging(false)}
+  onDrop={(e) => {
+    e.preventDefault();
+    setIsDragging(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file && file.type.startsWith('image/')) {
+      const reader = new FileReader();
+      reader.onloadend = () => setProfilePicture(reader.result as string);
+      reader.readAsDataURL(file);
+    }
+  }}
+  onClick={() => {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "image/*";
+    input.onchange = (e: any) => {
+      const file = e.target.files?.[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onloadend = () => setProfilePicture(reader.result as string);
+        reader.readAsDataURL(file);
+      }
+    };
+    input.click();
+  }}
+>
+  {profilePicture ? (
+    <img src={profilePicture} alt="Profile" style={{ width: "100%", height: "100%", objectFit: "cover", position: "absolute" }} />
+  ) : (
+    <div style={{ pointerEvents: "none", color: "#666", textAlign: "center" }}>
+      <p style={{ fontWeight: "bold" }}>Upload Profile Picture</p>
+      <p style={{ fontSize: "12px", marginTop: "4px" }}>Click to browse or drag & drop</p>
+    </div>
+  )}
+</div>
+
+<textarea
 className="input"
-placeholder="Profile Picture URL"
-value={profilePicture}
-onChange={(e)=>setProfilePicture(e.target.value)}
+placeholder="About Me (Description)"
+value={description}
+onChange={(e)=>setDescription(e.target.value)}
+style={{ minHeight: "80px", resize: "vertical" }}
 />
 
 <input
