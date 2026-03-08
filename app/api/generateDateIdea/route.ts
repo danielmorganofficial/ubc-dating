@@ -17,18 +17,42 @@ export async function POST(req: Request) {
     const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
     const prompt = `
-      You are an expert AI matchmaker. 
-      Given the following interests of two matched users, suggest a very concise, 1-2 sentence fun date idea that they could do together exactly at the specified location: "${suggestedLocation}".
-      It should read naturally using their actual names. For example, "Since ${userAName} and ${userBName} both like hiking, you could go hiking at ${suggestedLocation}!".
+      You are a fun AI matchmaker writing a personalized date suggestion.
       
-      ${userAName}'s Interests: ${userAInterests.join(", ")}
-      ${userBName}'s Interests: ${userBInterests.join(", ")}
+      The two users have been matched and their date venue has ALREADY been decided: "${suggestedLocation}".
+      You MUST write a 1-2 sentence date idea that takes place AT "${suggestedLocation}" — do NOT suggest any other location.
+      Use their actual first names (${userAName} and ${userBName}) naturally in the sentence.
+      Connect their shared interests to something they could specifically enjoy at ${suggestedLocation}.
       
-      Output ONLY the sentence.
+      ${userAName}'s Interests: ${userAInterests.join(", ") || "general activities"}
+      ${userBName}'s Interests: ${userBInterests.join(", ") || "general activities"}
+      
+      RULES:
+      - MUST mention "${suggestedLocation}" by name
+      - MUST use "${userAName}" and "${userBName}" by name  
+      - Output ONLY the sentence, no extra commentary
     `;
 
     const result = await model.generateContent(prompt);
     let text = result.response.text().trim();
+
+    // Post-processing to ensure the suggestedLocation is always present
+    if (!text.includes(suggestedLocation)) {
+      // Attempt to find any location-like phrase and replace it, or just append if none found
+      const locationRegex = /(at|in|on)\s+([A-Z][a-zA-Z0-9\s'-]+(?:[,\s]+[A-Z][a-zA-Z0-9\s'-]+)*)/g;
+      if (locationRegex.test(text)) {
+        text = text.replace(locationRegex, `$1 ${suggestedLocation}`);
+      } else {
+        // If no location phrase was found, try to insert it naturally
+        // This is a simple heuristic; more complex NLP might be needed for perfect placement
+        const lastPeriodIndex = text.lastIndexOf('.');
+        if (lastPeriodIndex !== -1) {
+          text = text.substring(0, lastPeriodIndex) + ` at ${suggestedLocation}.`;
+        } else {
+          text += ` at ${suggestedLocation}.`;
+        }
+      }
+    }
 
     return NextResponse.json({ dateIdea: text });
   } catch (error) {

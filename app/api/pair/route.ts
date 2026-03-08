@@ -36,16 +36,15 @@ export async function GET() {
       Users data:
       ${JSON.stringify(users, null, 2)}
 
-      IMPORTANT: Suggest a unique and fun Date Plan specific to the matched users' shared interests. Give a Compatibility Percentage.
+      IMPORTANT: Provide a Compatibility Percentage. Write a 1-sentence "reasoning" explaining why they match gently using their actual names (from profile.username) instead of generic terms like "User A" or "User 1". DO NOT suggest a specific date plan or location in the reasoning, as that will be handled separately.
 
       Please return a JSON response strictly in this array format:
       [
         {
           "user1_id": "id1",
           "user2_id": "id2",
-          "reasoning": "Why they match...",
-          "compatibility_percentage": "85%",
-          "date_plan": "Specific date suggestion based on their interests..."
+          "reasoning": "Since [Name 1] likes... and [Name 2] likes..., they make a great match.",
+          "compatibility_percentage": "85%"
         },
         ...
         {
