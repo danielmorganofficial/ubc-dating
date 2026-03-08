@@ -285,9 +285,14 @@ export default function Dashboard() {
                     const ideaData = await ideaRes.json()
                     if (ideaData.dateIdea) dateIdeaText = ideaData.dateIdea
                     if (ideaData.location) pickedLocation = ideaData.location
+                  } else {
+                    const errorData = await ideaRes.json().catch(() => ({}))
+                    console.error("API Error generating date idea:", errorData)
+                    alert(`Date idea generation failed: ${errorData.error || "Unknown error"}. Please check your GEMINI_API_KEY.`)
                   }
                 } catch (e) {
                   console.error("Failed to fetch custom date idea", e)
+                  alert("Failed to connect to the Date Idea generation service.")
                 }
 
                 await updateDoc(doc(db, "users", userId), {
