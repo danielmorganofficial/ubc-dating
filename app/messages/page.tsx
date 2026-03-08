@@ -11,7 +11,9 @@ import {
   query,
   orderBy,
   onSnapshot,
-  serverTimestamp
+  serverTimestamp,
+  setDoc,
+  Timestamp
 } from "firebase/firestore"
 
 export default function Messages() {
@@ -69,17 +71,24 @@ export default function Messages() {
 
   // Subscribe to messages in real-time once chatId is ready
   useEffect(() => {
-    if (!chatId) return
+    if (!chatId || !currentUserId) return
+
+    // Mark all messages as read when the page is opened
+    setDoc(doc(db, "chats", chatId), { [`lastRead_${currentUserId}`]: Timestamp.now() }, { merge: true })
+      .catch(() => {})
 
     const msgRef = collection(db, "chats", chatId, "messages")
     const q = query(msgRef, orderBy("timestamp", "asc"))
 
     const unsubscribe = onSnapshot(q, (snap) => {
       setMessages(snap.docs.map((d) => ({ id: d.id, ...d.data() })))
+      // Update lastRead every time new messages arrive while page is open
+      setDoc(doc(db, "chats", chatId!), { [`lastRead_${currentUserId}`]: Timestamp.now() }, { merge: true })
+        .catch(() => {})
     })
 
     return () => unsubscribe()
-  }, [chatId])
+  }, [chatId, currentUserId])
 
   // Auto-scroll to latest message
   useEffect(() => {
