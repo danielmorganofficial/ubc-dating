@@ -271,6 +271,19 @@ export default function Dashboard() {
                 setMatch(bestMatch)
                 setDateSuggestion(suggestion)
 
+                await fetch("/api/sendMatchEmail",{
+                method:"POST",
+                headers:{
+                "Content-Type":"application/json"
+                },
+                body:JSON.stringify({
+                email: currentUser.profile.email,
+                matchName: bestMatch.profile.name,
+                matchEmail: bestMatch.profile.email,
+                matchPhone: bestMatch.profile.phone
+                })
+                })
+
               }
 
             }
