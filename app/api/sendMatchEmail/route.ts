@@ -1,10 +1,15 @@
 import { Resend } from "resend"
 
-const resend = new Resend(process.env.RESEND_API_KEY)
-
 export async function POST(req: Request) {
 
   try {
+    const apiKey = process.env.RESEND_API_KEY;
+    if (!apiKey) {
+      console.warn("RESEND_API_KEY missing - skipping email.");
+      return Response.json({ success: false, error: "Missing API Key" });
+    }
+
+    const resend = new Resend(apiKey)
 
     const { email, matchName, matchEmail, matchPhone } = await req.json()
 

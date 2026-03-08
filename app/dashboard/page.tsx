@@ -138,6 +138,8 @@ export default function Dashboard() {
 
   // Match Data
   const [match, setMatch] = useState<any>(null)
+  const [matchCompatibility, setMatchCompatibility] = useState<number | null>(null)
+  const [dateIdeaDescription, setDateIdeaDescription] = useState<string | null>(null)
   const [dateSuggestion, setDateSuggestion] = useState<Availability | null>(null)
 
   // Profile Form Data
@@ -217,9 +219,10 @@ export default function Dashboard() {
             const matchUserSnap = await getDoc(doc(db, "users", userData.matchId))
             if (matchUserSnap.exists()) {
               setMatch({ id: matchUserSnap.id, ...matchUserSnap.data() })
-              if (userData.matchSuggestion) {
-                setDateSuggestion(userData.matchSuggestion)
-              }
+              
+              if (userData.matchCompatibility) setMatchCompatibility(userData.matchCompatibility)
+              if (userData.matchIdeaDescription) setDateIdeaDescription(userData.matchIdeaDescription)
+              if (userData.matchSuggestion) setDateSuggestion(userData.matchSuggestion)
             }
           } else {
             // Find a new match
@@ -260,19 +263,52 @@ export default function Dashboard() {
                     bestMatch.profile?.availability || []
                   ) || { day: "Tuesday", time: "Evening" }
 
-                // Update both users in Firestore to persist the match
+
+                let dateIdeaText = ""
+                // Preemptively decide location so we can feed it to Gemini
+                const locations = ["Blue Chip Cafe", "Nitobe Garden", "Wreck Beach", "Great Dane Coffee", "UBC Rose Garden"]
+                const prePickedLocation = locations[Math.floor(Math.random() * locations.length)]
+
+                try {
+                  const ideaRes = await fetch("/api/generateDateIdea", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                      userAName: currentUser.profile?.username || currentUser.name || "User",
+                      userAInterests: currentUser.profile?.interests || [],
+                      userBName: bestMatch.profile?.username || bestMatch.name || "Match",
+                      userBInterests: bestMatch.profile?.interests || [],
+                      suggestedLocation: prePickedLocation
+                    })
+                  })
+                  if(ideaRes.ok) {
+                    const ideaData = await ideaRes.json()
+                    if (ideaData.dateIdea) dateIdeaText = ideaData.dateIdea
+                  }
+                } catch (e) {
+                  console.error("Failed to fetch custom date idea", e)
+                }
+
                 await updateDoc(doc(db, "users", userId), {
                   matchId: bestMatch.id,
-                  matchSuggestion: suggestion
+                  matchSuggestion: suggestion,
+                  matchCompatibility: bestScore,
+                  matchIdeaDescription: dateIdeaText,
+                  matchLocation: prePickedLocation
                 })
 
                 await updateDoc(doc(db, "users", bestMatch.id), {
                   matchId: userId,
-                  matchSuggestion: suggestion
+                  matchSuggestion: suggestion,
+                  matchCompatibility: bestScore,
+                  matchIdeaDescription: dateIdeaText,
+                  matchLocation: prePickedLocation
                 })
 
                 setMatch(bestMatch)
                 setDateSuggestion(suggestion)
+                setMatchCompatibility(bestScore)
+                setDateIdeaDescription(dateIdeaText)
 
                 await fetch("/api/sendMatchEmail",{
                 method:"POST",
@@ -469,6 +505,12 @@ export default function Dashboard() {
                   Meet {match.profile?.username || match.name || "someone special"}
                 </h3>
 
+                {matchCompatibility !== null && (
+                  <div className="inline-block bg-pink-100 text-pink-800 px-4 py-1 rounded-full text-lg font-semibold my-2">
+                    {matchCompatibility}% Compatible
+                  </div>
+                )}
+
                 {match.profile?.description && (
                   <p className="text-gray-700 italic my-3 text-lg">"{match.profile.description}"</p>
                 )}
@@ -482,14 +524,20 @@ export default function Dashboard() {
                   They also like: <span className="font-medium text-pink-600">{match.profile?.interests?.[0] || match.hobby || "hanging out"}</span>
                 </p>
 
-                <div className="bg-pink-50 rounded-xl p-6 inline-block text-left border border-pink-100">
+                <div className="bg-pink-50 rounded-xl p-6 inline-block text-left border border-pink-100 max-w-md mx-auto">
                   <p className="font-bold text-pink-800 text-sm uppercase tracking-wider mb-2">Suggested Date</p>
                   <p className="text-xl font-medium text-pink-900">
-                    📍 {suggestedLocation}
+                    📍 {match.matchLocation || "UBC Campus"}
                   </p>
-                  <p className="text-lg text-pink-800 mt-1">
+                  <p className="text-lg text-pink-800 mt-1 mb-3">
                     🕒 {dateSuggestion ? `${dateSuggestion.day} ${dateSuggestion.time}` : "Tuesday 6PM"}
                   </p>
+                  
+                  {dateIdeaDescription && (
+                    <div className="pt-3 border-t border-pink-200 mt-2">
+                      <p className="text-sm text-pink-800 leading-relaxed font-medium">✨ {dateIdeaDescription}</p>
+                    </div>
+                  )}
                 </div>
               </div>
             )}

@@ -7,8 +7,10 @@ import { collection, getDocs, doc, getDoc } from "firebase/firestore"
 export default function Match() {
 
   const [match, setMatch] = useState<any>(null)
+  const [currentUser, setCurrentUser] = useState<any>(null)
   const [matchDetails, setMatchDetails] = useState<any>(null)
   const [matchStatus, setMatchStatus] = useState<string | null>(null)
+  const [dateIdeaDescription, setDateIdeaDescription] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -20,6 +22,14 @@ export default function Match() {
         if (!currentUserId) {
           setLoading(false)
           return
+        }
+
+        const userDocRef = doc(db, "users", currentUserId)
+        const currentUserSnap = await getDoc(userDocRef)
+        let currentUserData = null
+        if (currentUserSnap.exists()) {
+          currentUserData = currentUserSnap.data()
+          setCurrentUser(currentUserData)
         }
 
         const res = await fetch("/api/pair")
@@ -40,12 +50,42 @@ export default function Match() {
               const docSnap = await getDoc(docRef)
               
               if (docSnap.exists()) {
-                setMatch({ id: docSnap.id, ...docSnap.data() })
+                const matchData: any = { id: docSnap.id, ...docSnap.data() }
+                setMatch(matchData)
+                
+                // If it's a newly generated batch from /api/pair, matchLocation won't exist yet on the document.
+                // It usually is injected by dashboard/page.tsx. Just in case, define a fallback so the prompt doesn't fail.
+                const fallbackLocations = ["Blue Chip Cafe", "Nitobe Garden", "Wreck Beach", "Great Dane Coffee", "UBC Rose Garden"]
+                const prePickedLocation = matchData.matchLocation || fallbackLocations[Math.floor(Math.random() * fallbackLocations.length)]
+                
                 setMatchDetails({
                   compatibility: myMatchData.compatibility_percentage,
                   datePlan: myMatchData.date_plan,
-                  reasoning: myMatchData.reasoning
+                  reasoning: myMatchData.reasoning,
+                  location: prePickedLocation
                 })
+
+                // Generate concise date description
+                try {
+                  const ideaRes = await fetch("/api/generateDateIdea", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                      userAName: currentUserData?.profile?.username || currentUserData?.name || "User",
+                      userAInterests: currentUserData?.profile?.interests || [],
+                      userBName: matchData.profile?.username || matchData.name || "Match",
+                      userBInterests: matchData.profile?.interests || [],
+                      suggestedLocation: prePickedLocation
+                    })
+                  })
+                  if(ideaRes.ok) {
+                    const ideaData = await ideaRes.json()
+                    if (ideaData.dateIdea) setDateIdeaDescription(ideaData.dateIdea)
+                  }
+                } catch (e) {
+                  console.error("Failed to fetch custom date idea", e)
+                }
+
               }
             }
           }
@@ -88,48 +128,61 @@ export default function Match() {
     )
   }
 
+  const locations = ["Blue Chip Cafe", "Nitobe Garden", "Wreck Beach", "Great Dane Coffee", "UBC Rose Garden"]
+  const suggestedLocation = locations[Math.floor(Math.random() * locations.length)]
+
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen gap-4 p-8 text-center">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-b from-pink-50 via-white to-pink-50 text-gray-900 pb-20 p-8 text-center pt-16">
 
       <h1 className="text-4xl font-bold text-pink-600">
         Your Weekly Match ❤️
       </h1>
 
       <div className="bg-white p-8 rounded-2xl shadow-xl max-w-lg w-full mt-6 border border-gray-100">
-        <h2 className="text-3xl font-bold text-gray-800 mb-2">
-          {match.profile?.username || match.name || "someone special"}
-        </h2>
+        
+        {match.profile?.profilePicture && (
+          <img src={match.profile.profilePicture} alt="Profile" className="w-32 h-32 rounded-full mx-auto object-cover mb-4 border-4 border-pink-100 shadow-md" />
+        )}
+
+        <h3 className="text-3xl font-bold text-gray-800 mb-2">
+          Meet {match.profile?.username || match.name || "someone special"}
+        </h3>
         
         {matchDetails?.compatibility && (
           <div className="inline-block bg-pink-100 text-pink-800 px-4 py-1 rounded-full text-lg font-semibold my-2">
             {matchDetails.compatibility} Compatible
           </div>
         )}
+        {match.profile?.description && (
+          <p className="text-gray-700 italic my-3 text-lg">"{match.profile.description}"</p>
+        )}
 
-        <div className="text-left mt-6 space-y-4 text-gray-700">
-          <div>
-            <span className="font-bold block text-gray-900">They also like:</span>
-            {match.profile?.interests?.[0] || match.hobby || "hanging out"}
-          </div>
+        <div className="text-gray-500 text-sm mb-6 space-y-1 mt-4">
+          <p>📧 {match.profile?.email}</p>
+          <p>📱 {match.profile?.phone}</p>
+        </div>
 
-          {matchDetails?.reasoning && (
-            <div>
-              <span className="font-bold block text-gray-900">Why you matched:</span>
-              <p className="text-sm">{matchDetails.reasoning}</p>
-            </div>
-          )}
+        <p className="text-gray-600 mb-8 text-lg">
+          They also like: <span className="font-medium text-pink-600">{match.profile?.interests?.[0] || match.hobby || "hanging out"}</span>
+        </p>
 
-          {matchDetails?.datePlan && (
-            <div className="bg-pink-50 p-4 rounded-xl border border-pink-100 mt-6">
-              <span className="font-bold flex items-center gap-2 text-pink-900 mb-1">
-                 Suggested Date Plan
-              </span>
-              <p className="text-sm text-pink-800">
-                {matchDetails.datePlan}
-              </p>
+        <div className="bg-pink-50 rounded-xl p-6 inline-block text-left border border-pink-100 max-w-md mx-auto w-full">
+          <p className="font-bold text-pink-800 text-sm uppercase tracking-wider mb-2">Suggested Date</p>
+          <p className="text-xl font-medium text-pink-900">
+            📍 {matchDetails?.location || match.matchLocation || "UBC Campus"}
+          </p>
+          <p className="text-lg text-pink-800 mt-1 mb-3">
+            🕒 Tuesday 6PM
+          </p>
+          
+          {(dateIdeaDescription || matchDetails?.reasoning) && (
+            <div className="pt-3 border-t border-pink-200 mt-2">
+              {matchDetails?.reasoning && <p className="text-sm text-pink-800 leading-relaxed font-medium mb-3">🤝 {matchDetails.reasoning}</p>}
+              {dateIdeaDescription && <p className="text-sm text-pink-800 leading-relaxed font-medium">✨ {dateIdeaDescription}</p>}
             </div>
           )}
         </div>
+
       </div>
     </div>
   )
