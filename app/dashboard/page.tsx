@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { db } from "@/lib/firebase"
-import { doc, getDoc, collection, getDocs, updateDoc } from "firebase/firestore"
+import { doc, getDoc, collection, getDocs, updateDoc, onSnapshot, query, orderBy, Timestamp } from "firebase/firestore"
 
 type Availability = { day: string; time: string }
 
@@ -142,6 +142,7 @@ export default function Dashboard() {
   const [dateIdeaDescription, setDateIdeaDescription] = useState<string | null>(null)
   const [dateSuggestion, setDateSuggestion] = useState<Availability | null>(null)
   const [matchLocation, setMatchLocation] = useState<string>("")
+  const [unreadCount, setUnreadCount] = useState(0)
 
   // Profile Form Data
   const [profilePicture, setProfilePicture] = useState("")
@@ -339,6 +340,38 @@ export default function Dashboard() {
     loadData()
   }, [router])
 
+  // Subscribe to unread message count in real-time
+  useEffect(() => {
+    const userId = localStorage.getItem("userId")
+    if (!userId || !match) return
+
+    const chatId = [userId, match.id].sort().join("_")
+    const msgsRef = collection(db, "chats", chatId, "messages")
+    const q = query(msgsRef, orderBy("timestamp", "asc"))
+
+    const unsub = onSnapshot(q, async (snap) => {
+      // Read the lastRead timestamp for this user from the chat meta doc
+      const metaRef = doc(db, "chats", chatId)
+      const metaSnap = await getDoc(metaRef)
+      const lastReadTs: Timestamp | null = metaSnap.exists()
+        ? metaSnap.data()?.[`lastRead_${userId}`] || null
+        : null
+
+      let count = 0
+      snap.docs.forEach((d) => {
+        const msg = d.data()
+        if (msg.senderId !== userId) {
+          if (!lastReadTs || (msg.timestamp && msg.timestamp.toMillis() > lastReadTs.toMillis())) {
+            count++
+          }
+        }
+      })
+      setUnreadCount(count)
+    })
+
+    return () => unsub()
+  }, [match])
+
   // Handlers for Profile
   function toggleAvailability(day: DayOfWeek, time: TimeBlock) {
     const exists = availability.some(a => a.day === day && a.time === time)
@@ -506,10 +539,32 @@ export default function Dashboard() {
             Preferences
           </button>
           <button
-            onClick={() => router.push("/messages")}
-            className="py-3 font-medium text-sm border-b-2 border-transparent text-gray-500 hover:text-gray-700 transition-all duration-200 flex items-center gap-1.5"
+            onClick={async () => {
+              // Mark messages as read before navigating
+              const userId = localStorage.getItem("userId")
+              if (userId && match) {
+                const chatId = [userId, match.id].sort().join("_")
+                try {
+                  await updateDoc(doc(db, "chats", chatId), {
+                    [`lastRead_${userId}`]: Timestamp.now()
+                  })
+                } catch {
+                  // chat doc may not exist yet, that's fine
+                }
+              }
+              setUnreadCount(0)
+              router.push("/messages")
+            }}
+            className="py-3 font-medium text-sm border-b-2 border-transparent text-gray-500 hover:text-gray-700 transition-all duration-200 flex items-center gap-1.5 relative"
           >
-            <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
+            <span className="relative">
+              <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
+              {unreadCount > 0 && (
+                <span className="absolute -top-2 -right-2.5 min-w-[16px] h-4 bg-pink-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center px-1 leading-none shadow-sm">
+                  {unreadCount > 9 ? "9+" : unreadCount}
+                </span>
+              )}
+            </span>
             Messages
           </button>
         </div>
