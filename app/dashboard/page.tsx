@@ -141,6 +141,7 @@ export default function Dashboard() {
   const [matchCompatibility, setMatchCompatibility] = useState<number | null>(null)
   const [dateIdeaDescription, setDateIdeaDescription] = useState<string | null>(null)
   const [dateSuggestion, setDateSuggestion] = useState<Availability | null>(null)
+  const [matchLocation, setMatchLocation] = useState<string>("")
 
   // Profile Form Data
   const [profilePicture, setProfilePicture] = useState("")
@@ -223,6 +224,7 @@ export default function Dashboard() {
               if (userData.matchCompatibility) setMatchCompatibility(userData.matchCompatibility)
               if (userData.matchIdeaDescription) setDateIdeaDescription(userData.matchIdeaDescription)
               if (userData.matchSuggestion) setDateSuggestion(userData.matchSuggestion)
+              if (userData.matchLocation) setMatchLocation(userData.matchLocation)
             }
           } else {
             // Find a new match
@@ -265,9 +267,7 @@ export default function Dashboard() {
 
 
                 let dateIdeaText = ""
-                // Preemptively decide location so we can feed it to Gemini
-                const locations = ["Blue Chip Cafe", "Nitobe Garden", "Wreck Beach", "Great Dane Coffee", "UBC Rose Garden"]
-                const prePickedLocation = locations[Math.floor(Math.random() * locations.length)]
+                let pickedLocation = ""
 
                 try {
                   const ideaRes = await fetch("/api/generateDateIdea", {
@@ -277,13 +277,13 @@ export default function Dashboard() {
                       userAName: currentUser.profile?.username || currentUser.name || "User",
                       userAInterests: currentUser.profile?.interests || [],
                       userBName: bestMatch.profile?.username || bestMatch.name || "Match",
-                      userBInterests: bestMatch.profile?.interests || [],
-                      suggestedLocation: prePickedLocation
+                      userBInterests: bestMatch.profile?.interests || []
                     })
                   })
-                  if(ideaRes.ok) {
+                  if (ideaRes.ok) {
                     const ideaData = await ideaRes.json()
                     if (ideaData.dateIdea) dateIdeaText = ideaData.dateIdea
+                    if (ideaData.location) pickedLocation = ideaData.location
                   }
                 } catch (e) {
                   console.error("Failed to fetch custom date idea", e)
@@ -294,7 +294,7 @@ export default function Dashboard() {
                   matchSuggestion: suggestion,
                   matchCompatibility: bestScore,
                   matchIdeaDescription: dateIdeaText,
-                  matchLocation: prePickedLocation
+                  matchLocation: pickedLocation
                 })
 
                 await updateDoc(doc(db, "users", bestMatch.id), {
@@ -302,13 +302,14 @@ export default function Dashboard() {
                   matchSuggestion: suggestion,
                   matchCompatibility: bestScore,
                   matchIdeaDescription: dateIdeaText,
-                  matchLocation: prePickedLocation
+                  matchLocation: pickedLocation
                 })
 
                 setMatch(bestMatch)
                 setDateSuggestion(suggestion)
                 setMatchCompatibility(bestScore)
                 setDateIdeaDescription(dateIdeaText)
+                setMatchLocation(pickedLocation)
 
                 await fetch("/api/sendMatchEmail",{
                 method:"POST",
@@ -445,7 +446,28 @@ export default function Dashboard() {
     return <div className="p-10 text-center">Loading your dashboard...</div>
   }
 
-  const locations = ["Blue Chip Cafe", "Nitobe Garden", "Wreck Beach", "Great Dane Coffee", "UBC Rose Garden"]
+  const locations = [
+    "Blue Chip Café",
+    "Nitobe Memorial Garden",
+    "Wreck Beach",
+    "Great Dane Coffee",
+    "UBC Rose Garden",
+    "Pacific Spirit Regional Park",
+    "UBC Botanical Garden",
+    "Spanish Banks Beach",
+    "AMS Student Nest",
+    "Koerner's Pub",
+    "Main Mall",
+    "Museum of Anthropology (MOA)",
+    "Beaty Biodiversity Museum",
+    "UBC Aquatic Centre",
+    "UBC Student Recreation Centre",
+    "The Aviary (Climbing Wall)",
+    "Wesbrook Village",
+    "Rain or Shine Ice Cream",
+    "Jericho Beach",
+    "Point Grey Village"
+  ]
   const suggestedLocation = locations[Math.floor(Math.random() * locations.length)]
 
   return (
@@ -534,7 +556,7 @@ export default function Dashboard() {
                 <div className="bg-pink-50 rounded-xl p-6 inline-block text-left border border-pink-100 max-w-md mx-auto">
                   <p className="font-bold text-pink-800 text-sm uppercase tracking-wider mb-2">Suggested Date</p>
                   <p className="text-xl font-medium text-pink-900">
-                    📍 {match.matchLocation || "UBC Campus"}
+                    📍 {matchLocation || "UBC Campus"}
                   </p>
                   <p className="text-lg text-pink-800 mt-1 mb-3">
                     🕒 {dateSuggestion ? `${dateSuggestion.day} ${dateSuggestion.time}` : "Tuesday 6PM"}

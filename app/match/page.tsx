@@ -53,19 +53,14 @@ export default function Match() {
                 const matchData: any = { id: docSnap.id, ...docSnap.data() }
                 setMatch(matchData)
                 
-                // If it's a newly generated batch from /api/pair, matchLocation won't exist yet on the document.
-                // It usually is injected by dashboard/page.tsx. Just in case, define a fallback so the prompt doesn't fail.
-                const fallbackLocations = ["Blue Chip Cafe", "Nitobe Garden", "Wreck Beach", "Great Dane Coffee", "UBC Rose Garden"]
-                const prePickedLocation = matchData.matchLocation || fallbackLocations[Math.floor(Math.random() * fallbackLocations.length)]
-                
                 setMatchDetails({
                   compatibility: myMatchData.compatibility_percentage,
                   datePlan: myMatchData.date_plan,
                   reasoning: myMatchData.reasoning,
-                  location: prePickedLocation
+                  location: matchData.matchLocation || ""
                 })
 
-                // Generate concise date description
+                // Generate concise date description via Gemini (also picks best location)
                 try {
                   const ideaRes = await fetch("/api/generateDateIdea", {
                     method: "POST",
@@ -74,13 +69,13 @@ export default function Match() {
                       userAName: currentUserData?.profile?.username || currentUserData?.name || "User",
                       userAInterests: currentUserData?.profile?.interests || [],
                       userBName: matchData.profile?.username || matchData.name || "Match",
-                      userBInterests: matchData.profile?.interests || [],
-                      suggestedLocation: prePickedLocation
+                      userBInterests: matchData.profile?.interests || []
                     })
                   })
-                  if(ideaRes.ok) {
+                  if (ideaRes.ok) {
                     const ideaData = await ideaRes.json()
                     if (ideaData.dateIdea) setDateIdeaDescription(ideaData.dateIdea)
+                    if (ideaData.location) setMatchDetails((prev: any) => ({ ...prev, location: ideaData.location }))
                   }
                 } catch (e) {
                   console.error("Failed to fetch custom date idea", e)
@@ -128,7 +123,28 @@ export default function Match() {
     )
   }
 
-  const locations = ["Blue Chip Cafe", "Nitobe Garden", "Wreck Beach", "Great Dane Coffee", "UBC Rose Garden"]
+  const locations = [
+    "Blue Chip Café",
+    "Nitobe Memorial Garden",
+    "Wreck Beach",
+    "Great Dane Coffee",
+    "UBC Rose Garden",
+    "Pacific Spirit Regional Park",
+    "UBC Botanical Garden",
+    "Spanish Banks Beach",
+    "AMS Student Nest",
+    "Koerner's Pub",
+    "Main Mall",
+    "Museum of Anthropology (MOA)",
+    "Beaty Biodiversity Museum",
+    "UBC Aquatic Centre",
+    "UBC Student Recreation Centre",
+    "The Aviary (Climbing Wall)",
+    "Wesbrook Village",
+    "Rain or Shine Ice Cream",
+    "Jericho Beach",
+    "Point Grey Village"
+  ]
   const suggestedLocation = locations[Math.floor(Math.random() * locations.length)]
 
   return (
