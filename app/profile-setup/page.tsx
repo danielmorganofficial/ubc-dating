@@ -161,6 +161,18 @@ return(
   )}
 </div>
 
+<div style={{ margin: "10px 0", textAlign: "center", color: "#666", fontSize: "14px", fontWeight: "bold" }}>
+  — OR —
+</div>
+
+<input
+  className="input"
+  type="url"
+  placeholder="Paste image URL here"
+  value={profilePicture.startsWith("data:") ? "" : profilePicture}
+  onChange={(e) => setProfilePicture(e.target.value)}
+/>
+
 <textarea
 className="input"
 placeholder="About Me (Description)"
