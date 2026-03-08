@@ -476,7 +476,7 @@ export default function Dashboard() {
       {/* Header */}
       <header className="bg-white/80 backdrop-blur-md sticky top-0 z-10 border-b border-pink-100">
         <div className="max-w-4xl mx-auto px-4 h-16 flex items-center justify-between border-b">
-          <h1 className="font-bold text-xl text-pink-600">❤️ UBC Dating Dashboard</h1>
+          <h1 className="font-bold text-xl text-pink-600">❤️ UBC Pair Dashboard</h1>
           <button
             onClick={handleLogout}
             className="text-sm font-medium text-gray-500 hover:text-gray-800 transition-colors"

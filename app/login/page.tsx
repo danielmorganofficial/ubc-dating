@@ -88,7 +88,7 @@ return(
 
 <div className="card">
 
-<h1 className="title">❤️ UBC Weekly Dating</h1>
+<h1 className="title">❤️ UBC Pair</h1>
 
 <p className="subtitle">{isLogin ? "Login" : "Register"}</p>
 
