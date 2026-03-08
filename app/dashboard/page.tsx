@@ -54,11 +54,11 @@ function calculateCompatibility(userA: any, userB: any) {
   // Gender preference check
 
   const aLikesB =
-    aPref.gender === "Any" ||
+    !aPref.gender || aPref.gender === "Any" ||
     aPref.gender === bProfile.gender
 
   const bLikesA =
-    bPref.gender === "Any" ||
+    !bPref.gender || bPref.gender === "Any" ||
     bPref.gender === aProfile.gender
 
   if (!aLikesB || !bLikesA) return -1
@@ -68,22 +68,22 @@ function calculateCompatibility(userA: any, userB: any) {
 
   // Ethnicity preference
 
-  if (aPref.ethnicity === "Any" || aPref.ethnicity === bProfile.ethnicity) {
+  if (!aPref.ethnicity || aPref.ethnicity === "Any" || aPref.ethnicity === bProfile.ethnicity) {
     score += 5
   }
 
-  if (bPref.ethnicity === "Any" || bPref.ethnicity === aProfile.ethnicity) {
+  if (!bPref.ethnicity || bPref.ethnicity === "Any" || bPref.ethnicity === aProfile.ethnicity) {
     score += 5
   }
 
 
   // Religion preference
 
-  if (aPref.religion === "Any" || aPref.religion === bProfile.religion) {
+  if (!aPref.religion || aPref.religion === "Any" || aPref.religion === bProfile.religion) {
     score += 5
   }
 
-  if (bPref.religion === "Any" || bPref.religion === aProfile.religion) {
+  if (!bPref.religion || bPref.religion === "Any" || bPref.religion === aProfile.religion) {
     score += 5
   }
 
