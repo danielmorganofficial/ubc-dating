@@ -37,94 +37,94 @@ function suggestMatchDate(
   return null
 }
 
-function calculateCompatibility(userA:any,userB:any){
+function calculateCompatibility(userA: any, userB: any) {
 
-let score = 0
+  let score = 0
 
-const aProfile = userA.profile || {}
-const bProfile = userB.profile || {}
+  const aProfile = userA.profile || {}
+  const bProfile = userB.profile || {}
 
-const aPref = userA.preferences || {}
-const bPref = userB.preferences || {}
+  const aPref = userA.preferences || {}
+  const bPref = userB.preferences || {}
 
-const aQ = userA.questionnaire || {}
-const bQ = userB.questionnaire || {}
-
-
-// Gender preference check
-
-const aLikesB =
-  aPref.gender === "Any" ||
-  aPref.gender === bProfile.gender
-
-const bLikesA =
-  bPref.gender === "Any" ||
-  bPref.gender === aProfile.gender
-
-if(!aLikesB || !bLikesA) return -1
-
-score += 20
+  const aQ = userA.questionnaire || {}
+  const bQ = userB.questionnaire || {}
 
 
-// Ethnicity preference
+  // Gender preference check
 
-if(aPref.ethnicity === "Any" || aPref.ethnicity === bProfile.ethnicity){
-score += 5
-}
+  const aLikesB =
+    aPref.gender === "Any" ||
+    aPref.gender === bProfile.gender
 
-if(bPref.ethnicity === "Any" || bPref.ethnicity === aProfile.ethnicity){
-score += 5
-}
+  const bLikesA =
+    bPref.gender === "Any" ||
+    bPref.gender === aProfile.gender
 
+  if (!aLikesB || !bLikesA) return -1
 
-// Religion preference
-
-if(aPref.religion === "Any" || aPref.religion === bProfile.religion){
-score += 5
-}
-
-if(bPref.religion === "Any" || bPref.religion === aProfile.religion){
-score += 5
-}
+  score += 20
 
 
-// MBTI similarity
+  // Ethnicity preference
 
-if(aProfile.mbti && bProfile.mbti){
+  if (aPref.ethnicity === "Any" || aPref.ethnicity === bProfile.ethnicity) {
+    score += 5
+  }
 
-if(aProfile.mbti[0] === bProfile.mbti[0]) score += 3
-if(aProfile.mbti[1] === bProfile.mbti[1]) score += 3
-if(aProfile.mbti[2] === bProfile.mbti[2]) score += 3
-if(aProfile.mbti[3] === bProfile.mbti[3]) score += 3
-
-}
-
-
-// Shared interests
-
-const aInterests = aProfile.interests || []
-const bInterests = bProfile.interests || []
-
-const shared = aInterests.filter((i:string)=>
-bInterests.includes(i)
-)
-
-score += shared.length * 4
+  if (bPref.ethnicity === "Any" || bPref.ethnicity === aProfile.ethnicity) {
+    score += 5
+  }
 
 
-// Lifestyle similarity
+  // Religion preference
 
-function similarity(a:number,b:number){
-return 5 - Math.abs(a-b)
-}
+  if (aPref.religion === "Any" || aPref.religion === bProfile.religion) {
+    score += 5
+  }
 
-score += similarity(aQ.socialLevel,bQ.socialLevel)
-score += similarity(aQ.partyLife,bQ.partyLife)
-score += similarity(aQ.exerciseImportance,bQ.exerciseImportance)
-score += similarity(aQ.spontaneity,bQ.spontaneity)
-score += similarity(aQ.workLifeBalance,bQ.workLifeBalance)
+  if (bPref.religion === "Any" || bPref.religion === aProfile.religion) {
+    score += 5
+  }
 
-return Math.min(score,100)
+
+  // MBTI similarity
+
+  if (aProfile.mbti && bProfile.mbti) {
+
+    if (aProfile.mbti[0] === bProfile.mbti[0]) score += 3
+    if (aProfile.mbti[1] === bProfile.mbti[1]) score += 3
+    if (aProfile.mbti[2] === bProfile.mbti[2]) score += 3
+    if (aProfile.mbti[3] === bProfile.mbti[3]) score += 3
+
+  }
+
+
+  // Shared interests
+
+  const aInterests = aProfile.interests || []
+  const bInterests = bProfile.interests || []
+
+  const shared = aInterests.filter((i: string) =>
+    bInterests.includes(i)
+  )
+
+  score += shared.length * 4
+
+
+  // Lifestyle similarity
+
+  function similarity(a: number, b: number) {
+    return 5 - Math.abs(a - b)
+  }
+
+  score += similarity(aQ.socialLevel, bQ.socialLevel)
+  score += similarity(aQ.partyLife, bQ.partyLife)
+  score += similarity(aQ.exerciseImportance, bQ.exerciseImportance)
+  score += similarity(aQ.spontaneity, bQ.spontaneity)
+  score += similarity(aQ.workLifeBalance, bQ.workLifeBalance)
+
+  return Math.min(score, 100)
 
 }
 
@@ -176,7 +176,7 @@ export default function Dashboard() {
       try {
         const userRef = doc(db, "users", userId)
         const userSnap = await getDoc(userRef)
-        
+
         if (userSnap.exists()) {
           const userData = userSnap.data()
           setUserDoc(userData)
@@ -365,28 +365,28 @@ export default function Dashboard() {
 
   // Components
   function Scale({ value, setValue }: { value: number, setValue: (v: number) => void }) {
-  return (
-    <div className="w-full">
-      <input
-        type="range"
-        min="1"
-        max="5"
-        step="1"
-        value={value}
-        onChange={(e) => setValue(Number(e.target.value))}
-        className="w-full h-2 bg-gray-200 rounded-lg appearance-none accent-pink-500 cursor-pointer"
-      />
+    return (
+      <div className="w-full">
+        <input
+          type="range"
+          min="1"
+          max="5"
+          step="1"
+          value={value}
+          onChange={(e) => setValue(Number(e.target.value))}
+          className="w-full h-2 bg-gray-200 rounded-lg appearance-none accent-pink-500 cursor-pointer"
+        />
 
-      <div className="flex justify-between text-sm text-gray-500 mt-2 px-1">
-        <span>1</span>
-        <span>2</span>
-        <span>3</span>
-        <span>4</span>
-        <span>5</span>
+        <div className="flex justify-between text-sm text-gray-500 mt-2 px-1">
+          <span>1</span>
+          <span>2</span>
+          <span>3</span>
+          <span>4</span>
+          <span>5</span>
+        </div>
       </div>
-    </div>
-  )
-}
+    )
+  }
 
   if (loading) {
     return <div className="p-10 text-center">Loading your dashboard...</div>
@@ -397,34 +397,34 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-pink-50 via-white to-pink-50 text-gray-900 pb-20">
-      
+
       {/* Header */}
       <header className="bg-white/80 backdrop-blur-md sticky top-0 z-10 border-b border-pink-100">
         <div className="max-w-4xl mx-auto px-4 h-16 flex items-center justify-between border-b">
           <h1 className="font-bold text-xl text-pink-600">❤️ UBC Dating Dashboard</h1>
-          <button 
+          <button
             onClick={handleLogout}
             className="text-sm font-medium text-gray-500 hover:text-gray-800 transition-colors"
           >
             Log Out
           </button>
         </div>
-        
+
         {/* Navigation Tabs */}
         <div className="max-w-4xl mx-auto px-4 flex gap-8 overflow-x-auto">
-          <button 
+          <button
             onClick={() => setActiveTab("match")}
             className={`py-3 font-medium text-sm border-b-2 transition-all duration-200 ${activeTab === "match" ? "border-pink-500 text-pink-600" : "border-transparent text-gray-500 hover:text-gray-700"}`}
           >
             Weekly Match
           </button>
-          <button 
+          <button
             onClick={() => setActiveTab("profile")}
             className={`py-3 font-medium text-sm border-b-2 transition-all duration-200 ${activeTab === "profile" ? "border-pink-500 text-pink-600" : "border-transparent text-gray-500 hover:text-gray-700"}`}
           >
             My Profile
           </button>
-          <button 
+          <button
             onClick={() => setActiveTab("questionnaire")}
             className={`py-3 font-medium text-sm border-b-2 transition-all duration-200 ${activeTab === "questionnaire" ? "border-pink-500 text-pink-600" : "border-transparent text-gray-500 hover:text-gray-700"}`}
           >
@@ -434,12 +434,12 @@ export default function Dashboard() {
       </header>
 
       <main className="max-w-5xl mx-auto p-6 mt-8">
-        
+
         {/* TAB 1: MATCH */}
         {activeTab === "match" && (
           <div className="bg-white rounded-2xl shadow-sm p-8 text-center border border-gray-100 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <h2 className="text-3xl font-bold mb-2">Your Weekly Match ❤️</h2>
-            
+
             {!match ? (
               <p className="text-gray-500 mt-8">Finding someone special for you...</p>
             ) : (
@@ -447,16 +447,16 @@ export default function Dashboard() {
                 {match.profile?.profilePicture && (
                   <img src={match.profile.profilePicture} alt="Profile" className="w-32 h-32 rounded-full mx-auto object-cover mb-4 border-4 border-pink-100" />
                 )}
-                
+
                 <h3 className="text-2xl font-semibold mb-1">
                   Meet {match.profile?.name || "someone special"}
                 </h3>
 
                 <div className="text-gray-500 text-sm mb-6 space-y-1">
-                <p>📧 {match.profile?.email}</p>
-                <p>📱 {match.profile?.phone}</p>
+                  <p>📧 {match.profile?.email}</p>
+                  <p>📱 {match.profile?.phone}</p>
                 </div>
-                
+
                 <p className="text-gray-600 mb-8 text-lg">
                   They also like: <span className="font-medium text-pink-600">{match.profile?.interests?.[0] || match.hobby || "hanging out"}</span>
                 </p>
@@ -479,9 +479,9 @@ export default function Dashboard() {
         {activeTab === "profile" && (
           <div className="bg-white rounded-2xl shadow-sm p-6 md:p-8 border border-gray-100 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <h2 className="text-2xl font-bold mb-6">Edit Profile</h2>
-            
+
             <form onSubmit={handleSaveProfile} className="space-y-5">
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Profile Picture URL</label>
@@ -569,11 +569,11 @@ export default function Dashboard() {
               <div className="pt-4 border-t">
                 <h3 className="text-sm font-medium text-gray-700 mb-1">Your Availability</h3>
                 <p className="text-sm text-gray-500 mb-4">Select all times you are generally free for dates.</p>
-                
+
                 <div className="grid grid-cols-[80px_1fr_1fr_1fr] gap-3 w-full text-sm">
                   <div className="p-2"></div>
                   {TIMES.map(time => <div key={time} className="text-center font-semibold text-gray-500 p-2">{time}</div>)}
-                  
+
                   {DAYS.map(day => (
                     <div className="contents" key={day}>
                       <div className="text-right pr-4 font-medium text-gray-600 flex items-center justify-end h-10">{day.slice(0, 3)}</div>
@@ -583,9 +583,8 @@ export default function Dashboard() {
                           <div
                             key={`${day}-${time}`}
                             onClick={() => toggleAvailability(day, time)}
-                            className={`h-12 w-full rounded-xl cursor-pointer flex items-center justify-center transition-all ${
-                              isSelected ? "bg-pink-500 text-white shadow-sm" : "bg-gray-100 text-transparent hover:bg-gray-200"
-                            }`}
+                            className={`h-12 w-full rounded-xl cursor-pointer flex items-center justify-center transition-all ${isSelected ? "bg-pink-500 text-white shadow-sm" : "bg-gray-100 text-transparent hover:bg-gray-200"
+                              }`}
                           >
                             {isSelected && "✓"}
                           </div>
@@ -608,9 +607,9 @@ export default function Dashboard() {
         {activeTab === "questionnaire" && (
           <div className="bg-white rounded-2xl shadow-sm p-6 md:p-8 border border-gray-100 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <h2 className="text-2xl font-bold mb-6">Match Preferences</h2>
-            
+
             <form onSubmit={handleSaveQuestionnaire} className="space-y-6">
-              
+
               <div>
                 <h3 className="text-lg font-semibold border-b pb-2 mb-4">Partner Demographics</h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
