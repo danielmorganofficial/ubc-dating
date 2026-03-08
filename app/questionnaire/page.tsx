@@ -122,7 +122,6 @@ export default function Questionnaire() {
             className="input"
             value={prefGender}
             onChange={(e)=>setPrefGender(e.target.value)}
-            required
           >
             <option value="">Preferred Gender</option>
             <option>Male</option>
@@ -135,7 +134,6 @@ export default function Questionnaire() {
             className="input"
             value={prefEthnicity}
             onChange={(e)=>setPrefEthnicity(e.target.value)}
-            required
           >
             <option value="">Preferred Ethnicity</option>
             <option>East Asian</option>
@@ -154,7 +152,6 @@ export default function Questionnaire() {
             className="input"
             value={prefReligion}
             onChange={(e)=>setPrefReligion(e.target.value)}
-            required
           >
             <option value="">Preferred Religion</option>
             <option>None</option>
