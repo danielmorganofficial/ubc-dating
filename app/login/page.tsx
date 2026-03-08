@@ -23,13 +23,23 @@ setError("")
 
 if(isLogin) {
   try {
-    const q = query(collection(db, "users"), where("profile.email", "==", email))
-    const querySnapshot = await getDocs(q)
-    if (querySnapshot.empty) {
-      setError("Account not found. Please register.")
+    const qEmail = query(collection(db, "users"), where("profile.email", "==", email))
+    const qUsername = query(collection(db, "users"), where("profile.username", "==", email))
+
+    const [snapEmail, snapUsername] = await Promise.all([getDocs(qEmail), getDocs(qUsername)])
+    
+    let userDoc = null
+    if (!snapEmail.empty) {
+      userDoc = snapEmail.docs[0]
+    } else if (!snapUsername.empty) {
+      userDoc = snapUsername.docs[0]
+    }
+
+    if (!userDoc) {
+      setError("Account not found. Please check your credentials or register.")
       return
     }
-    const userDoc = querySnapshot.docs[0]
+
     localStorage.setItem("userId", userDoc.id)
     router.push("/dashboard")
   } catch(err) {
@@ -99,8 +109,8 @@ required
 
 <input
 className="input"
-type="email"
-placeholder="Email"
+type={isLogin ? "text" : "email"}
+placeholder={isLogin ? "Email or Username" : "Email"}
 value={email}
 onChange={(e)=>setEmail(e.target.value)}
 required
