@@ -502,7 +502,7 @@ export default function Dashboard() {
                 )}
 
                 <h3 className="text-2xl font-semibold mb-1">
-                  Meet {match.profile?.username || match.name || "someone special"}
+                  Meet {match.profile?.name || "someone special"}
                 </h3>
 
                 {matchCompatibility !== null && (
